@@ -2,6 +2,7 @@ import { DayPilotScheduler } from "@daypilot/daypilot-lite-react";
 import axios from "@/config/api";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import Loader from "./Loader";
 
 const Scheduler = () => {
   const [doctors, setDoctors] = useState([]);
@@ -18,7 +19,9 @@ const Scheduler = () => {
       try {
         let response = await axios.request(options);
         console.log("Doctors: ", response.data);
-        setDoctors(response.data);
+        setDoctors(
+          response.data.sort((a, b) => a.first_name.localeCompare(b.first_name))
+        );
       } catch (err) {
         console.log(err);
       }
@@ -93,12 +96,11 @@ const Scheduler = () => {
 
   const config = {
     timeHeaders: [
-      { groupBy: "Month" },
-      { groupBy: "Day", format: "d" },
+      { groupBy: "Day", format: "d MMMM yyyy" },
       { groupBy: "Hour" },
     ],
     scale: "CellDuration",
-    days: 7,
+    days: 1,
     startDate: new Date().toISOString().split("T")[0],
     cellDuration: 60, // 1440 minutes = 1 day
     cellWidthSpec: "Auto",
@@ -110,7 +112,7 @@ const Scheduler = () => {
   };
   return (
     <div style={{ height: "500px", width: "100%" }}>
-      <DayPilotScheduler {...config} />
+      {events.length !== 0 ? <DayPilotScheduler {...config} /> : <Loader />}
     </div>
   );
 };

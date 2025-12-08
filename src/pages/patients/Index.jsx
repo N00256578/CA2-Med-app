@@ -77,9 +77,9 @@ export default function Index() {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            <TableHead>Date of Birth</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone number</TableHead>
-            <TableHead>Specialisation</TableHead>
             {token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
@@ -89,9 +89,11 @@ export default function Index() {
               <TableCell>
                 {patient.first_name} {patient.last_name}
               </TableCell>
+              <TableCell>
+                {new Date(patient.date_of_birth * 1000).toLocaleDateString()}
+              </TableCell>
               <TableCell>{patient.email}</TableCell>
               <TableCell>{patient.phone}</TableCell>
-              <TableCell>{patient.specialisation}</TableCell>
               {token && (
                 <TableCell>
                   <div className="flex gap-2">
@@ -99,7 +101,11 @@ export default function Index() {
                       className="cursor-pointer hover:border-blue-500"
                       variant="outline"
                       size="icon"
-                      onClick={() => navigate(`/patients/${patient.first_name} ${patient.last_name}`)}
+                      onClick={() =>
+                        navigate(
+                          `/patients/${patient.first_name} ${patient.last_name}`
+                        )
+                      }
                     >
                       <Eye />
                     </Button>

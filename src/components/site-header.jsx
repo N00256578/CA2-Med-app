@@ -10,6 +10,14 @@ export function SiteHeader() {
   const getPageTitle = () => {
     const path =
       location.pathname.split("/").filter(Boolean).pop() || "dashboard";
+
+    if (path.includes("-")) {
+      return path
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    }
+
     return path.charAt(0).toUpperCase() + path.slice(1);
   };
 

@@ -10,10 +10,11 @@ import {
   IconStethoscope,
   IconBodyScan,
   IconPillFilled,
+  IconPencil,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useEffect } from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import Register from "./Register";
 
 const data = {
   navMain: [
@@ -74,7 +76,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }) {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
   console.log(location);
@@ -93,6 +95,17 @@ export function AppSidebar({ ...props }) {
       }
     }
   }, [message]);
+
+  const checkActive = (url) => {
+    if (location.pathname === "/" && url === "/") {
+      console.log("You are in dashboard");
+      return true;
+    } else if (url !== "/" && location.pathname.includes(url)) {
+      console.log("You are somewhere else");
+      return true;
+    }
+    return false;
+  };
 
   return (
     <>
@@ -116,10 +129,20 @@ export function AppSidebar({ ...props }) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <NavMain items={data.navMain} />
-          <NavExamples items={data.examples} />
+          <NavMain items={data.navMain} checkActive={checkActive} />
         </SidebarContent>
         <SidebarFooter>
+          {user ? (
+            <SidebarMenuButton
+              asChild
+              tooltip={"register"}
+              isActive={checkActive("/register")}
+            >
+              <Link to={"/register"}>
+                <IconPencil /> <span>Register new user</span>
+              </Link>
+            </SidebarMenuButton>
+          ) : null}
           <NavUser user={user} />
         </SidebarFooter>
       </Sidebar>
