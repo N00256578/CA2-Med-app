@@ -27,7 +27,7 @@ export default function Show() {
   const location = useLocation();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState([]);
-  const { patients, appointments } = useData();
+  const { patients, appointments, prescriptions } = useData();
   const { id } = location.state;
   const { token } = useAuth();
   const [selected, setSelected] = useState("Appointments");
@@ -36,8 +36,6 @@ export default function Show() {
     (app) => app.doctor_id === doctor.id
   );
 
-  console.log("Appointments = ", doctorAppointments);
-
   const patientList = new Set(
     ...[doctorAppointments.map((app) => app.patient_id)]
   );
@@ -45,7 +43,8 @@ export default function Show() {
   const doctorPatients = patients
     .filter((pat) => patientList.has(pat.id))
     .sort((a, b) => a.first_name.localeCompare(b.first_name));
-  console.log("Patients = ", doctorPatients);
+
+  const doctorPres = prescriptions.filter((pre) => pre.doctor_id === doctor.id);
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -69,12 +68,7 @@ export default function Show() {
     fetchDoctor();
   }, []);
 
-  const selectionOptions = [
-    "Appointments",
-    "Patients",
-    "Diagnoses",
-    "Prescriptions",
-  ];
+  const selectionOptions = ["Appointments", "Patients", "Prescriptions"];
 
   const Selector = (
     <div className="flex">
@@ -128,11 +122,83 @@ export default function Show() {
         </TableBody>
       </Table>
     ) : selected === "Appointments" ? (
-      <>Appointments</>
-    ) : selected === "Diagnoses" ? (
-      <>Diagnoses</>
+      <Table>
+        <TableCaption>A list of appointments.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Patient</TableHead>
+            <TableHead>Date</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {doctorAppointments.map((appointment, index) => {
+            const patient = patients.find(
+              (pat) => pat.id === appointment.patient_id
+            );
+
+            return (
+              <TableRow
+                key={appointment.id}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: index % 2 === 0 ? "" : "#f9f9f9",
+                }}
+                onClick={() => navigate(`/appointment/${appointment.id}`)}
+              >
+                <TableCell>
+                  {patient.first_name} {patient.last_name}
+                </TableCell>
+                <TableCell>
+                  {new Date(
+                    appointment.appointment_date * 1000
+                  ).toLocaleDateString()}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     ) : selected === "Prescriptions" ? (
-      <>Prescriptions</>
+      <Table>
+        <TableCaption>A list of prescriptions.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Medication</TableHead>
+            <TableHead>Dosage</TableHead>
+            <TableHead>Patient</TableHead>
+            <TableHead>Start Date</TableHead>
+            <TableHead>End Date</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {doctorPres.map((pre, index) => {
+            const patient = patients.find((pat) => pat.id === pre.patient_id);
+
+            return (
+              <TableRow
+                key={pre.id}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor: index % 2 === 0 ? "" : "#f9f9f9",
+                }}
+                onClick={() => navigate(`/prescription/${pre.id}`)}
+              >
+                <TableCell>{pre.medication}</TableCell>
+                <TableCell>{pre.dosage}</TableCell>
+                <TableCell>
+                  {patient.first_name} {patient.last_name}
+                </TableCell>
+                <TableCell>
+                  {new Date(pre.start_date * 1000).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {new Date(pre.end_date * 1000).toLocaleDateString()}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     ) : (
       <></>
     );
