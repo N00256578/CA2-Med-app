@@ -2,13 +2,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, Outlet } from "react-router";
 
 export default function ProtectedRoute() {
-  const { token } = useAuth();
+  const { token, checkTokenValidity } = useAuth();
 
-  if (!token) {
+  // Check if token exists and is still valid
+  if (!token || !checkTokenValidity()) {
     return (
       <Navigate
         to={"/"}
-        state={{ message: "Unauthorized user! Please login", type: "error" }}
+        state={{
+          message: "Please login again",
+          type: "error",
+        }}
       />
     );
   }

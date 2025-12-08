@@ -1,4 +1,4 @@
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "@/components/AuthProvider";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 
@@ -8,10 +8,10 @@ import { SiteHeader } from "@/components/site-header";
 
 import Home from "@/pages/Home";
 
-import FestivalsIndex from "@/pages/festivals/Index";
-import FestivalsShow from "@/pages/festivals/Show";
-import FestivalsCreate from "@/pages/festivals/Create";
-import FestivalsEdit from "@/pages/festivals/Edit";
+import DoctorsIndex from "@/pages/doctors/Index";
+import FestivalsShow from "@/pages/doctors/Show";
+import FestivalsCreate from "@/pages/doctors/Create";
+import FestivalsEdit from "@/pages/doctors/Edit";
 
 import FormExamples from "@/pages/examples/Forms";
 import ProtectedRoute from "@/pages/ProtectedRoute";
@@ -37,7 +37,7 @@ export default function App() {
                   {/* Main content */}
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/festivals" element={<FestivalsIndex />} />
+                    <Route path="/doctors" element={<DoctorsIndex />} />
 
                     <Route path="/" element={<ProtectedRoute />}>
                       <Route

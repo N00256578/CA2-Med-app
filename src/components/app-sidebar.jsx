@@ -29,13 +29,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -78,6 +74,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }) {
+  const {user} = useAuth();
   const location = useLocation();
 
   console.log(location);
@@ -123,7 +120,7 @@ export function AppSidebar({ ...props }) {
           <NavExamples items={data.examples} />
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={data.user} />
+          <NavUser user={user} />
         </SidebarFooter>
       </Sidebar>
     </>
