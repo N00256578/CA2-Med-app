@@ -24,10 +24,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
+import { useNavigate } from "react-router";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
   const { onLogout } = useAuth();
+  const navigate = useNavigate();
 
   return user ? (
     <SidebarMenu>
@@ -86,5 +89,13 @@ export function NavUser({ user }) {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  ) : null;
+  ) : (
+    <Button
+      variant="outline"
+      className="mb-4 block cursor-pointer w-full"
+      onClick={() => navigate("/")}
+    >
+      Log in
+    </Button>
+  );
 }

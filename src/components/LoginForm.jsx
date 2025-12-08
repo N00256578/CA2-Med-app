@@ -29,6 +29,12 @@ export default function LoginForm() {
     onLogin(form.email, form.password);
   };
 
+  const handleKeyUp = (e) => {
+    if (e.key === "Enter") {
+      submitForm(e);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -49,6 +55,7 @@ export default function LoginForm() {
                 placeholder="m@example.com"
                 required
                 onChange={handleForm}
+                onKeyUp={handleKeyUp}
               />
             </div>
             <div className="grid gap-2">
@@ -61,6 +68,7 @@ export default function LoginForm() {
                 type="password"
                 required
                 onChange={handleForm}
+                onKeyUp={handleKeyUp}
               />
             </div>
           </div>

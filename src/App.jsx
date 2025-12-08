@@ -9,9 +9,14 @@ import { SiteHeader } from "@/components/site-header";
 import Home from "@/pages/Home";
 
 import DoctorsIndex from "@/pages/doctors/Index";
-import FestivalsShow from "@/pages/doctors/Show";
-import FestivalsCreate from "@/pages/doctors/Create";
-import FestivalsEdit from "@/pages/doctors/Edit";
+import DoctorsShow from "@/pages/doctors/Show";
+import DoctorsCreate from "@/pages/doctors/Create";
+import DoctorsEdit from "@/pages/doctors/Edit";
+
+import PatientsIndex from "@/pages/patients/Index";
+// import PatientsShow from "@/pages/patients/Show";
+// import PatientsCreate from "@/pages/patients/Create";
+// import PatientsEdit from "@/pages/patients/Edit";
 
 import FormExamples from "@/pages/examples/Forms";
 import ProtectedRoute from "@/pages/ProtectedRoute";
@@ -38,19 +43,17 @@ export default function App() {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/doctors" element={<DoctorsIndex />} />
+                    <Route path="/patients" element={<PatientsIndex />} />
 
                     <Route path="/" element={<ProtectedRoute />}>
+                      <Route path="/doctors/:name" element={<DoctorsShow />} />
                       <Route
-                        path="/festivals/:id"
-                        element={<FestivalsShow />}
+                        path="/doctors/:name/edit"
+                        element={<DoctorsEdit />}
                       />
                       <Route
-                        path="/festivals/:id/edit"
-                        element={<FestivalsEdit />}
-                      />
-                      <Route
-                        path="/festivals/create"
-                        element={<FestivalsCreate />}
+                        path="/doctors/create"
+                        element={<DoctorsCreate />}
                       />
                     </Route>
 

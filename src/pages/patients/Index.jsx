@@ -29,51 +29,51 @@ import Loader from "@/components/Loader";
 // } from "@/components/ui/card";
 
 export default function Index() {
-  const [doctors, setDoctors] = useState([]);
+  const [patients, setPatients] = useState([]);
   const { token } = useAuth();
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDoctors = async () => {
+    const fetchPatients = async () => {
       const options = {
         method: "GET",
-        url: "/doctors",
+        url: "/patients",
       };
 
       try {
         let response = await axios.request(options);
         console.log(response.data);
-        setDoctors(response.data);
+        setPatients(response.data);
       } catch (err) {
         console.log(err);
       }
     };
 
-    fetchDoctors();
+    fetchPatients();
   }, []);
 
-  if (doctors.length === 0) {
-    return <Loader name="doctors" />;
+  if (patients.length === 0) {
+    return <Loader name="patients" />;
   }
 
   const onDeleteCallback = (id) => {
-    toast.success("Doctor deleted successfully");
-    setDoctors(doctors.filter((doctor) => doctor.id !== id));
+    toast.success("Patient deleted successfully");
+    setPatients(patients.filter((patient) => patient.id !== id));
   };
 
   return (
     <>
       {token && (
         <Button asChild variant="outline" className="mb-4 mr-auto block">
-          <Link size="sm" to={`/doctors/create`}>
-            Create New Doctor
+          <Link size="sm" to={`/patients/create`}>
+            Create New Patient
           </Link>
         </Button>
       )}
 
       <Table>
-        <TableCaption>A list of doctors.</TableCaption>
+        <TableCaption>A list of patients.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
@@ -84,17 +84,14 @@ export default function Index() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {doctors.map((doctor, index) => (
-            <TableRow
-              key={doctor.id}
-              style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
-            >
+          {patients.map((patient) => (
+            <TableRow key={patient.id}>
               <TableCell>
-                {doctor.first_name} {doctor.last_name}
+                {patient.first_name} {patient.last_name}
               </TableCell>
-              <TableCell>{doctor.email}</TableCell>
-              <TableCell>{doctor.phone}</TableCell>
-              <TableCell>{doctor.specialisation}</TableCell>
+              <TableCell>{patient.email}</TableCell>
+              <TableCell>{patient.phone}</TableCell>
+              <TableCell>{patient.specialisation}</TableCell>
               {token && (
                 <TableCell>
                   <div className="flex gap-2">
@@ -102,11 +99,7 @@ export default function Index() {
                       className="cursor-pointer hover:border-blue-500"
                       variant="outline"
                       size="icon"
-                      onClick={() =>
-                        navigate(
-                          `/doctors/${doctor.first_name} ${doctor.last_name}`
-                        )
-                      }
+                      onClick={() => navigate(`/patients/${patient.first_name} ${patient.last_name}`)}
                     >
                       <Eye />
                     </Button>
@@ -114,14 +107,14 @@ export default function Index() {
                       className="cursor-pointer hover:border-blue-500"
                       variant="outline"
                       size="icon"
-                      onClick={() => navigate(`/doctors/${doctor.id}/edit`)}
+                      onClick={() => navigate(`/patients/${patient.id}/edit`)}
                     >
                       <Pencil />
                     </Button>
                     <DeleteBtn
                       onDeleteCallback={onDeleteCallback}
-                      resource="doctors"
-                      id={doctor.id}
+                      resource="patients"
+                      id={patient.id}
                     />
                   </div>
                 </TableCell>
