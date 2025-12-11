@@ -18,7 +18,6 @@ import PatientsIndex from "@/pages/patients/Index";
 // import PatientsCreate from "@/pages/patients/Create";
 // import PatientsEdit from "@/pages/patients/Edit";
 
-import FormExamples from "@/pages/examples/Forms";
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
 
@@ -61,8 +60,6 @@ export default function App() {
                           element={<DoctorsCreate />}
                         />
                       </Route>
-
-                      <Route path="/forms" element={<FormExamples />} />
                     </Routes>
                   </div>
                 </div>

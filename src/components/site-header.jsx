@@ -11,10 +11,13 @@ export function SiteHeader() {
     const path =
       location.pathname.split("/").filter(Boolean).pop() || "dashboard";
 
-    if (path.includes("-")) {
+    if (path.includes("-") || path.includes("%20")) {
       return path
         .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        // .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+        .split("%20")
+        // .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
     }
 

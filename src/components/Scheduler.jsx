@@ -103,16 +103,25 @@ const Scheduler = () => {
     days: 1,
     startDate: new Date().toISOString().split("T")[0],
     cellDuration: 60, // 1440 minutes = 1 day
-    cellWidthSpec: "Auto",
+    cellWidth: 67.5,
     resources: doctors.map((doctor) => ({
       id: doctor.id,
       name: doctor.first_name + " " + doctor.last_name,
     })),
     events: events,
+    eventResizeHandling: "Disabled",
+    eventMoveHandling: "Disabled",
+    onEventClick: (args) => {
+      alert("Link to event");
+    },
   };
   return (
     <div style={{ height: "500px", width: "100%" }}>
-      {events.length !== 0 ? <DayPilotScheduler {...config} /> : <Loader />}
+      {events.length !== 0 ? (
+        <DayPilotScheduler {...config} />
+      ) : (
+        <Loader name={"appointments"} />
+      )}
     </div>
   );
 };

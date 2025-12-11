@@ -22,15 +22,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Loader from "@/components/Loader";
 
 export default function Show() {
   const location = useLocation();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState([]);
-  const { patients, appointments, prescriptions } = useData();
-  const { id } = location.state;
+  const { patients, appointments, prescriptions, doctors } = useData();
   const { token } = useAuth();
   const [selected, setSelected] = useState("Appointments");
+
+  const { id } = location.state ? location.state : { id: null };
 
   const doctorAppointments = appointments.filter(
     (app) => app.doctor_id === doctor.id
@@ -47,10 +49,20 @@ export default function Show() {
   const doctorPres = prescriptions.filter((pre) => pre.doctor_id === doctor.id);
 
   useEffect(() => {
+    let doctorId = id;
+    if (id === null) {
+      console.log("Finding doctor by name from URL: ", doctors);
+      doctorId = doctors.find(
+        (doc) =>
+          `${doc.first_name}-${doc.last_name}` ===
+          location.pathname.split("/").pop()
+      )?.id;
+    }
+
     const fetchDoctor = async () => {
       const options = {
         method: "GET",
-        url: `/doctors/${id}`,
+        url: `/doctors/${doctorId}`,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -66,7 +78,7 @@ export default function Show() {
     };
 
     fetchDoctor();
-  }, []);
+  }, [doctors]);
 
   const selectionOptions = ["Appointments", "Patients", "Prescriptions"];
 
@@ -76,8 +88,8 @@ export default function Show() {
         return (
           <Button
             key={option}
-            variant={selected === option ? "default" : "outline"}
-            className="mr-2 mb-4"
+            variant={selected === option ? "secondary" : "outline"}
+            className="mr-2 mb-4 cursor-pointer"
             onClick={() => setSelected(option)}
           >
             {option}
@@ -203,7 +215,9 @@ export default function Show() {
       <></>
     );
 
-  return (
+  console.log("Doctor data: ", doctor);
+
+  return doctor.length !== 0 ? (
     <>
       <Card className="w-full max-w-md">
         <CardHeader>
@@ -220,5 +234,7 @@ export default function Show() {
       {Selector}
       {selection}
     </>
+  ) : (
+    <Loader name="doctor" />
   );
 }

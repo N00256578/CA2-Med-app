@@ -75,12 +75,7 @@ export default function LoginForm() {
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button
-          variant="outline"
-          onClick={submitForm}
-          type="submit"
-          className="w-full"
-        >
+        <Button variant="outline" onClick={submitForm} className="w-full">
           Login
         </Button>
       </CardFooter>

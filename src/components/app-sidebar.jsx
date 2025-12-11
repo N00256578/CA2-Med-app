@@ -93,6 +93,7 @@ export function AppSidebar({ ...props }) {
       } else {
         toast(message);
       }
+      window.history.replaceState({}, "");
     }
   }, [message]);
 
