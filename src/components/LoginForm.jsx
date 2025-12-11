@@ -36,49 +36,52 @@ export default function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Login to your account</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={submitForm}>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                onChange={handleForm}
-                onKeyUp={handleKeyUp}
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+    <>
+      CHANGE THE LOGINFORM AND THE DELETE BUTTON!!!!!
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Login to your account</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={submitForm}>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="email"
+                  required
+                  onChange={handleForm}
+                  onKeyUp={handleKeyUp}
+                />
               </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                onChange={handleForm}
-                onKeyUp={handleKeyUp}
-              />
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                </div>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  onChange={handleForm}
+                  onKeyUp={handleKeyUp}
+                />
+              </div>
             </div>
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="flex-col gap-2">
-        <Button variant="outline" onClick={submitForm} className="w-full">
-          Login
-        </Button>
-      </CardFooter>
-    </Card>
+          </form>
+        </CardContent>
+        <CardFooter className="flex-col gap-2">
+          <Button variant="outline" onClick={submitForm} className="w-full">
+            Login
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

@@ -2,10 +2,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, Outlet } from "react-router";
 
 export default function ProtectedRoute() {
-  const { token, checkTokenValidity } = useAuth();
+  const { token } = useAuth();
 
   // Check if token exists and is still valid
-  if (!token || !checkTokenValidity()) {
+  if (!token) {
     return (
       <Navigate
         to={"/"}

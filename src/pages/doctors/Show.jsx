@@ -219,6 +219,9 @@ export default function Show() {
 
   return doctor.length !== 0 ? (
     <>
+      <Button onClick={() => navigate(-1)} variant="outline" className="mb-4 mr-auto">
+        Back
+      </Button>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>
@@ -230,6 +233,15 @@ export default function Show() {
           <p className="mb-2">Email: {doctor.email}</p>
           <p className="mb-2">Phone: {doctor.phone}</p>
         </CardContent>
+        <CardFooter>
+          <Button
+            onClick={() => navigate(`/doctor/edit/${doctor.id}`)}
+            variant="outline"
+            className="w-full"
+          >
+            Edit
+          </Button>
+        </CardFooter>
       </Card>
       {Selector}
       {selection}

@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }) => {
       return err.response.data;
     }
   };
+
   const onLogout = () => {
     setToken(null);
     setUser(null);
@@ -53,20 +54,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
   };
 
-  const checkTokenValidity = () => {
-    if (!token) {
-      console.log("No token available");
-      return false;
-    }
-    return true;
-  };
 
   const value = {
     token,
     user,
     onLogin,
     onLogout,
-    checkTokenValidity,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
