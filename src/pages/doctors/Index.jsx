@@ -118,6 +118,7 @@ export default function Index() {
       setSortColumn({ column, ascending: true });
     }
   };
+  
   return (
     <>
       <div className="mb-6 flex items-center gap-4">
@@ -130,7 +131,7 @@ export default function Index() {
         <input
           type="text"
           value={search}
-          className="flex-1 block border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 block border border-gray-300 rounded-md px-3 py-2"
           placeholder="Search doctor..."
           onChange={(e) => {
             setSearch(e.target.value);

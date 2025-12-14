@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
-import axios from "@/config/api";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, Pencil } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -17,75 +16,147 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import Loader from "@/components/Loader";
-
-// import {
-//   Card,
-//   CardAction,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
+import { useData } from "@/contexts/DataContext";
 
 export default function Index() {
-  const [patients, setPatients] = useState([]);
+  const { patients, loading, refreshPatients } = useData();
   const { token } = useAuth();
+  const [sortColumn, setSortColumn] = useState({
+    column: "name",
+    ascending: true,
+  });
+  const [search, setSearch] = useState("");
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      const options = {
-        method: "GET",
-        url: "/patients",
-      };
+  const patientsVisible = useMemo(() => {
+    let result = [...patients];
 
-      try {
-        let response = await axios.request(options);
-        console.log(response.data);
-        setPatients(response.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+    if (search.trim() !== "") {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (pat) =>
+          `${pat.first_name} ${pat.last_name}`.toLowerCase().includes(q) ||
+          pat.email.toLowerCase().includes(q)
+      );
+    }
 
-    fetchPatients();
-  }, []);
+    const { column, ascending } = sortColumn;
 
-  if (patients.length === 0) {
+    switch (column) {
+      case "name":
+        ascending
+          ? result.sort((a, b) => a.first_name.localeCompare(b.first_name))
+          : result.sort((a, b) => b.first_name.localeCompare(a.first_name));
+        break;
+      case "email":
+        ascending
+          ? result.sort((a, b) => a.email.localeCompare(b.email))
+          : result.sort((a, b) => b.email.localeCompare(a.email));
+        break;
+      case "birthday":
+        ascending
+          ? result.sort(
+              (a, b) => new Date(a.date_of_birth) - new Date(b.date_of_birth)
+            )
+          : result.sort(
+              (a, b) => new Date(b.date_of_birth) - new Date(a.date_of_birth)
+            );
+        break;
+    }
+    return result;
+  }, [patients, sortColumn, search]);
+
+  if (loading) {
     return <Loader name="patients" />;
   }
 
-  const onDeleteCallback = (id) => {
+  const onDeleteCallback = () => {
     toast.success("Patient deleted successfully");
-    setPatients(patients.filter((patient) => patient.id !== id));
+    refreshPatients();
+  };
+
+  const changeSortOrder = (column) => {
+    if (sortColumn.column === column) {
+      setSortColumn({ column, ascending: !sortColumn.ascending });
+    } else {
+      setSortColumn({ column, ascending: true });
+    }
   };
 
   return (
     <>
-      {token && (
-        <Button asChild variant="outline" className="mb-4 mr-auto block">
-          <Link size="sm" to={`/patients/create`}>
-            Create New Patient
-          </Link>
-        </Button>
-      )}
+      <div className="mb-6 flex items-center gap-4">
+        {token && (
+          <Button asChild variant="outline">
+            <Link to={`/patients/create`}>Create New Patient</Link>
+          </Button>
+        )}
+
+        <input
+          type="text"
+          value={search}
+          className="flex-1 block border border-gray-300 rounded-md px-3 py-2"
+          placeholder="Search patients..."
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+        />
+      </div>
 
       <Table>
         <TableCaption>A list of patients.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Date of Birth</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead
+              onClick={() => changeSortOrder("name")}
+              className="cursor-pointer"
+            >
+              <div className="flex">
+                Name
+                {sortColumn.column === "name" ? (
+                  <div className="ml-auto">
+                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
+                  </div>
+                ) : null}
+              </div>
+            </TableHead>
+            <TableHead
+              onClick={() => changeSortOrder("birthday")}
+              className="cursor-pointer"
+            >
+              <div className="flex">
+                Birthdate
+                {sortColumn.column === "birthday" ? (
+                  <div className="ml-auto">
+                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
+                  </div>
+                ) : null}
+              </div>
+            </TableHead>
+            <TableHead
+              onClick={() => changeSortOrder("email")}
+              className="cursor-pointer"
+            >
+              <div className="flex">
+                Email
+                {sortColumn.column === "email" ? (
+                  <div className="ml-auto">
+                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
+                  </div>
+                ) : null}
+              </div>
+            </TableHead>
             <TableHead>Phone number</TableHead>
             {token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {patients.map((patient) => (
-            <TableRow key={patient.id}>
+          {patientsVisible.map((patient, index) => (
+            <TableRow
+              key={patient.id}
+              style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
+            >
               <TableCell>
                 {patient.first_name} {patient.last_name}
               </TableCell>
@@ -96,14 +167,15 @@ export default function Index() {
               <TableCell>{patient.phone}</TableCell>
               {token && (
                 <TableCell>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-end">
                     <Button
                       className="cursor-pointer hover:border-blue-500"
                       variant="outline"
                       size="icon"
                       onClick={() =>
                         navigate(
-                          `/patients/${patient.first_name} ${patient.last_name}`
+                          `/patients/${patient.first_name}-${patient.last_name}`,
+                          { state: { id: patient.id } }
                         )
                       }
                     >
@@ -113,7 +185,7 @@ export default function Index() {
                       className="cursor-pointer hover:border-blue-500"
                       variant="outline"
                       size="icon"
-                      onClick={() => navigate(`/patients/${patient.id}/edit`)}
+                      onClick={() => navigate(`/doctors/${patient.id}/edit`)}
                     >
                       <Pencil />
                     </Button>
