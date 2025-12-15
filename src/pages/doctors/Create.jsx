@@ -14,7 +14,7 @@ import {
 import * as Yup from "yup";
 import TextInputLiveFeedback from "@/components/TextInputLiveFeedback";
 
-export default function Create() {
+export default function CreateOrEdit() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const { refreshDoctors } = useData();

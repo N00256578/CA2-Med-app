@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/config/api";
 import { createContext, useContext, useEffect, useState } from "react";
+import { getAll } from "@/api";
 
 const DataContext = createContext();
 
@@ -15,26 +16,13 @@ export const DataProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchDoctors = async () => {
-      const options = {
-        method: "GET",
-        url: "/doctors",
-      };
-
-      try {
-        let response = await axios.request(options);
-        setDoctors(response.data);
-      } catch (err) {
-        console.log(err);
-      }
+      const doctors = await getAll("doctors");
+      setDoctors(doctors);
     };
 
     const fetchPatients = async () => {
-      try {
-        let patientsResponse = await axios.get("/patients");
-        setPatients(patientsResponse.data);
-      } catch (err) {
-        console.log(err);
-      }
+      const patients = await getAll("patients");
+      setPatients(patients);
     };
 
     fetchDoctors();
@@ -73,8 +61,8 @@ export const DataProvider = ({ children }) => {
 
   const refreshDoctors = async () => {
     try {
-      const response = await axios.get("/doctors");
-      setDoctors(response.data);
+      const response = await getAll("doctors");
+      setDoctors(response);
     } catch (err) {
       console.error("Error refreshing doctors:", err);
     }
@@ -83,10 +71,8 @@ export const DataProvider = ({ children }) => {
   const refreshPatients = async () => {
     if (!token) return;
     try {
-      const response = await axios.get("/patients", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPatients(response.data);
+      const response = await getAll("patients");
+      setPatients(response);
     } catch (err) {
       console.error("Error refreshing patients:", err);
     }

@@ -10,8 +10,7 @@ import Home from "@/pages/Home";
 
 import DoctorsIndex from "@/pages/doctors/Index";
 import DoctorsShow from "@/pages/doctors/Show";
-import DoctorsCreate from "@/pages/doctors/Create";
-import DoctorsEdit from "@/pages/doctors/Edit";
+import DoctorsCreateOrEdit from "@/pages/doctors/CreateOrEdit";
 
 import PatientsIndex from "@/pages/patients/Index";
 // import PatientsShow from "@/pages/patients/Show";
@@ -52,12 +51,12 @@ export default function App() {
                           element={<DoctorsShow />}
                         />
                         <Route
-                          path="/doctors/:name/edit"
-                          element={<DoctorsEdit />}
+                          path="/doctors/:id/edit"
+                          element={<DoctorsCreateOrEdit />}
                         />
                         <Route
                           path="/doctors/create"
-                          element={<DoctorsCreate />}
+                          element={<DoctorsCreateOrEdit />}
                         />
                       </Route>
                     </Routes>

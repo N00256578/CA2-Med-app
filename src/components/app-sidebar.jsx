@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import Register from "./Register";
+import Register from "./forms/Register";
 
 const data = {
   navMain: [
@@ -78,8 +78,6 @@ const data = {
 export function AppSidebar({ ...props }) {
   const { user } = useAuth();
   const location = useLocation();
-
-  console.log(location);
 
   let message = location.state?.message;
   let type = location.state?.type;

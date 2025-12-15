@@ -1,15 +1,24 @@
 import axios from "axios";
 
-export default axios.create({
-    baseURL: "https://ca2-med-api.vercel.app/",
+const axiosInstance = axios.create({
+  baseURL: "https://ca2-med-api.vercel.app/",
 });
 
-axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+// Add request interceptor to automatically include token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Get token from localStorage
+    const token = localStorage.getItem("token");
 
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  return config;
-});
+export default axiosInstance;

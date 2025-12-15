@@ -7,6 +7,9 @@ import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Edit() {
+  const navigate = useNavigate();
+  const { token } = useAuth();
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -14,8 +17,6 @@ export default function Edit() {
     start_date: "",
     end_date: "",
   });
-
-  const { token } = useAuth();
 
   useEffect(() => {
     const fetchFestival = async () => {
@@ -32,11 +33,11 @@ export default function Edit() {
         console.log(response.data);
         let festival = response.data;
         setForm({
-            title: festival.title,
-            description: festival.description,
-            city: festival.city,
-            start_date: festival.start_date,
-            end_date: festival.end_date,
+          title: festival.title,
+          description: festival.description,
+          city: festival.city,
+          start_date: festival.start_date,
+          end_date: festival.end_date,
         });
       } catch (err) {
         console.log(err);
@@ -46,7 +47,6 @@ export default function Edit() {
     fetchFestival();
   }, []);
 
-  const navigate = useNavigate();
   const { id } = useParams();
 
   const handleChange = (e) => {
@@ -57,8 +57,6 @@ export default function Edit() {
   };
 
   const updateFestival = async () => {
-    
-
     const options = {
       method: "PATCH",
       url: `/festivals/${id}`,

@@ -1,4 +1,4 @@
-import LoginForm from "@/components/LoginForm";
+import LoginForm from "@/components/forms/LoginForm";
 import Scheduler from "@/components/Scheduler";
 import { useAuth } from "@/hooks/useAuth";
 

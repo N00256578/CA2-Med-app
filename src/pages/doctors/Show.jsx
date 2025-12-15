@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "@/config/api";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import DeleteBtn from "@/components/DeleteBtn";
@@ -29,6 +28,7 @@ import { SortableHeader } from "@/components/SortableTable";
 import { sortData } from "@/utils/sortData";
 import { TabSelector } from "@/components/TabSelector";
 import { useSortColumn } from "@/hooks/useSortColumn";
+import { getById } from "@/api";
 
 export default function Show() {
   const location = useLocation();
@@ -57,20 +57,8 @@ export default function Show() {
     if (!doctorId) return;
 
     const fetchDoctor = async () => {
-      const options = {
-        method: "GET",
-        url: `/doctors/${doctorId}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      try {
-        let response = await axios.request(options);
-        setDoctor(response.data);
-      } catch (err) {
-        console.log(err);
-      }
+      const doctor = await getById("doctors", doctorId);
+      setDoctor(doctor);
     };
 
     fetchDoctor();
@@ -352,7 +340,7 @@ export default function Show() {
               onDeleteCallback={onDeleteCallback}
               resource="doctors"
               id={doctor.id}
-            />{" "}
+            />
           </div>
         </CardFooter>
       </Card>

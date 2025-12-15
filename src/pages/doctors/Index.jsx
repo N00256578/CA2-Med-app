@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, ArrowDown, ArrowUp, Filter } from "lucide-react";
+import { Eye, Pencil, Filter } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
 import { useAuth } from "@/hooks/useAuth";
 import {
