@@ -25,14 +25,14 @@ import { toast } from "sonner";
 import Loader from "@/components/Loader";
 import { useData } from "@/contexts/DataContext";
 import { useMemo, useState } from "react";
+import { SortableHeader } from "@/components/SortableTable";
+import { useSortColumn } from "@/hooks/useSortColumn";
 
 export default function Index() {
   const { doctors, loading, refreshDoctors } = useData();
   const { token } = useAuth();
-  const [sortColumn, setSortColumn] = useState({
-    column: "name",
-    ascending: true,
-  });
+  const { sortColumn, changeSortOrder } = useSortColumn();
+
   const [search, setSearch] = useState("");
   const [specFilter, setSpecFilter] = useState(new Set());
 
@@ -111,14 +111,6 @@ export default function Index() {
     refreshDoctors();
   };
 
-  const changeSortOrder = (column) => {
-    if (sortColumn.column === column) {
-      setSortColumn({ column, ascending: !sortColumn.ascending });
-    } else {
-      setSortColumn({ column, ascending: true });
-    }
-  };
-  
   return (
     <>
       <div className="mb-6 flex items-center gap-4">
@@ -184,46 +176,25 @@ export default function Index() {
         <TableCaption>A list of doctors.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead
-              onClick={() => changeSortOrder("name")}
-              className="cursor-pointer"
-            >
-              <div className="flex">
-                Name
-                {sortColumn.column === "name" ? (
-                  <div className="ml-auto">
-                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
-                  </div>
-                ) : null}
-              </div>
-            </TableHead>
-            <TableHead
-              onClick={() => changeSortOrder("email")}
-              className="cursor-pointer"
-            >
-              <div className="flex">
-                Email
-                {sortColumn.column === "email" ? (
-                  <div className="ml-auto">
-                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
-                  </div>
-                ) : null}
-              </div>
-            </TableHead>
+            <SortableHeader
+              column="name"
+              label="Name"
+              sortColumn={sortColumn}
+              onClick={changeSortOrder}
+            />
+            <SortableHeader
+              column="email"
+              label="Email"
+              sortColumn={sortColumn}
+              onClick={changeSortOrder}
+            />
             <TableHead>Phone number</TableHead>
-            <TableHead
-              onClick={() => changeSortOrder("spec")}
-              className="cursor-pointer"
-            >
-              <div className="flex">
-                Specialisation
-                {sortColumn.column === "spec" ? (
-                  <div className="ml-auto">
-                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
-                  </div>
-                ) : null}
-              </div>
-            </TableHead>
+            <SortableHeader
+              column="spec"
+              label="Specialisation"
+              sortColumn={sortColumn}
+              onClick={changeSortOrder}
+            />
             {token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>

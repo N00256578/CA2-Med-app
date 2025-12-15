@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "@/config/api";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import DeleteBtn from "@/components/DeleteBtn";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { useData } from "@/contexts/DataContext";
 import {
   Table,
@@ -23,41 +24,37 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Loader from "@/components/Loader";
+import { Pencil } from "lucide-react";
+import { SortableHeader } from "@/components/SortableTable";
+import { sortData } from "@/utils/sortData";
+import { TabSelector } from "@/components/TabSelector";
+import { useSortColumn } from "@/hooks/useSortColumn";
 
 export default function Show() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [doctor, setDoctor] = useState([]);
-  const { patients, appointments, prescriptions, doctors } = useData();
+  const [doctor, setDoctor] = useState(null);
+  const { patients, appointments, prescriptions, doctors, refreshDoctors } =
+    useData();
   const { token } = useAuth();
   const [selected, setSelected] = useState("Appointments");
+  const { sortColumn, setSortColumn, changeSortOrder } = useSortColumn();
 
-  const { id } = location.state ? location.state : { id: null };
-
-  const doctorAppointments = appointments.filter(
-    (app) => app.doctor_id === doctor.id
-  );
-
-  const patientList = new Set(
-    ...[doctorAppointments.map((app) => app.patient_id)]
-  );
-
-  const doctorPatients = patients
-    .filter((pat) => patientList.has(pat.id))
-    .sort((a, b) => a.first_name.localeCompare(b.first_name));
-
-  const doctorPres = prescriptions.filter((pre) => pre.doctor_id === doctor.id);
+  const { id } = location.state ?? { id: null };
 
   useEffect(() => {
     let doctorId = id;
     if (id === null) {
-      console.log("Finding doctor by name from URL: ", doctors);
+      if (!doctors.length) return;
+
       doctorId = doctors.find(
         (doc) =>
           `${doc.first_name}-${doc.last_name}` ===
           location.pathname.split("/").pop()
       )?.id;
     }
+
+    if (!doctorId) return;
 
     const fetchDoctor = async () => {
       const options = {
@@ -70,7 +67,6 @@ export default function Show() {
 
       try {
         let response = await axios.request(options);
-        console.log(response.data);
         setDoctor(response.data);
       } catch (err) {
         console.log(err);
@@ -78,146 +74,251 @@ export default function Show() {
     };
 
     fetchDoctor();
-  }, [doctors]);
+  }, [doctors, id, token, location.pathname]);
 
-  const selectionOptions = ["Appointments", "Patients", "Prescriptions"];
+  const doctorAppointments = useMemo(() => {
+    if (!doctor) return [];
+    return appointments.filter((app) => app.doctor_id === doctor.id);
+  }, [appointments, doctor]);
 
-  const Selector = (
-    <div className="flex">
-      {selectionOptions.map((option) => {
-        return (
-          <Button
-            key={option}
-            variant={selected === option ? "secondary" : "outline"}
-            className="mr-2 mb-4 cursor-pointer"
-            onClick={() => setSelected(option)}
+  const patientList = useMemo(
+    () => new Set(doctorAppointments.map((app) => app.patient_id)),
+    [doctorAppointments]
+  );
+  const patientsById = useMemo(() => {
+    const map = new Map();
+    patients.forEach((p) => map.set(p.id, p));
+    return map;
+  }, [patients]);
+
+  const doctorPatients = useMemo(() => {
+    const result = patients.filter((pat) => patientList.has(pat.id));
+
+    const comparators = {
+      name: (a, b) => a.first_name.localeCompare(b.first_name),
+      birthday: (a, b) => a.date_of_birth - b.date_of_birth,
+      email: (a, b) => a.email.localeCompare(b.email),
+    };
+
+    return sortData(
+      result,
+      sortColumn.column,
+      sortColumn.ascending,
+      comparators
+    );
+  }, [patients, patientList, sortColumn]);
+
+  const doctorApp = useMemo(() => {
+    const result = doctorAppointments.map((app) => ({
+      ...app,
+      patient: patientsById.get(app.patient_id),
+    }));
+
+    const comparators = {
+      name: (a, b) => a.patient.first_name.localeCompare(b.patient.first_name),
+      date: (a, b) => a.appointment_date - b.appointment_date,
+    };
+
+    return sortData(
+      result,
+      sortColumn.column,
+      sortColumn.ascending,
+      comparators
+    );
+  }, [doctorAppointments, patientsById, sortColumn]);
+
+  const doctorPres = useMemo(() => {
+    if (!doctor) return [];
+
+    const result = prescriptions.filter((pre) => pre.doctor_id === doctor.id);
+
+    const comparators = {
+      name: (a, b) => {
+        const pa = patientsById.get(a.patient_id);
+        const pb = patientsById.get(b.patient_id);
+        return pa.first_name.localeCompare(pb.first_name);
+      },
+      med: (a, b) => a.medication.localeCompare(b.medication),
+      "start-date": (a, b) => a.start_date - b.start_date,
+      "end-date": (a, b) => a.end_date - b.end_date,
+    };
+    return sortData(
+      result,
+      sortColumn.column,
+      sortColumn.ascending,
+      comparators
+    );
+  }, [doctor, prescriptions, patientsById, sortColumn]);
+
+  const PatientsTable = () => (
+    <Table>
+      <TableCaption>A list of patients.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <SortableHeader
+            column="name"
+            label="Name"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <SortableHeader
+            column="birthday"
+            label="Date of Birth"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <SortableHeader
+            column="email"
+            label="Email"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <TableHead>Phone number</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {doctorPatients.map((patient, index) => (
+          <TableRow
+            key={patient.id}
+            className="cursor-pointer hover:bg-gray-100"
+            style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
+            onClick={() => navigate(`/patients/${patient.id}`)}
           >
-            {option}
-          </Button>
-        );
-      })}
-    </div>
+            <TableCell>
+              {patient.first_name} {patient.last_name}
+            </TableCell>
+            <TableCell>
+              {new Date(patient.date_of_birth * 1000).toLocaleDateString()}
+            </TableCell>
+            <TableCell>{patient.email}</TableCell>
+            <TableCell>{patient.phone}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 
-  const selection =
-    selected === "Patients" ? (
-      <Table>
-        <TableCaption>A list of patients.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Date of Birth</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone number</TableHead>
+  const AppointmentsTable = () => (
+    <Table>
+      <TableCaption>A list of appointments.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <SortableHeader
+            column="name"
+            label="Patient"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <SortableHeader
+            column="date"
+            label="Date"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {doctorApp.map((appointment, index) => (
+          <TableRow
+            key={appointment.id}
+            className="cursor-pointer hover:bg-gray-100"
+            style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
+            onClick={() => navigate(`/appointment/${appointment.id}`)}
+          >
+            <TableCell>
+              {appointment.patient.first_name} {appointment.patient.last_name}
+            </TableCell>
+            <TableCell>
+              {new Date(
+                appointment.appointment_date * 1000
+              ).toLocaleDateString()}
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {doctorPatients.map((patient, index) => (
+        ))}
+      </TableBody>
+    </Table>
+  );
+
+  const PrescriptionsTable = () => (
+    <Table>
+      <TableCaption>A list of prescriptions.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <SortableHeader
+            column="name"
+            label="Patient"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <SortableHeader
+            column="med"
+            label="Medication"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <TableHead>Dosage</TableHead>
+          <SortableHeader
+            column="start-date"
+            label="Start Date"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+          <SortableHeader
+            column="end-date"
+            label="End Date"
+            sortColumn={sortColumn}
+            onClick={changeSortOrder}
+          />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {doctorPres.map((pre, index) => {
+          const patient = patientsById.get(pre.patient_id);
+          return (
             <TableRow
-              key={patient.id}
-              style={{
-                cursor: "pointer",
-                backgroundColor: index % 2 === 0 ? "" : "#f9f9f9",
-              }}
-              onClick={() => navigate(`/patients/${patient.id}`)}
+              key={pre.id}
+              className="cursor-pointer hover:bg-gray-100"
+              style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
+              onClick={() => navigate(`/prescription/${pre.id}`)}
             >
               <TableCell>
                 {patient.first_name} {patient.last_name}
               </TableCell>
+              <TableCell>{pre.medication}</TableCell>
+              <TableCell>{pre.dosage}</TableCell>
               <TableCell>
-                {new Date(patient.date_of_birth * 1000).toLocaleDateString()}
+                {new Date(pre.start_date * 1000).toLocaleDateString()}
               </TableCell>
-              <TableCell>{patient.email}</TableCell>
-              <TableCell>{patient.phone}</TableCell>
+              <TableCell>
+                {new Date(pre.end_date * 1000).toLocaleDateString()}
+              </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    ) : selected === "Appointments" ? (
-      <Table>
-        <TableCaption>A list of appointments.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Patient</TableHead>
-            <TableHead>Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {doctorAppointments.map((appointment, index) => {
-            const patient = patients.find(
-              (pat) => pat.id === appointment.patient_id
-            );
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
 
-            return (
-              <TableRow
-                key={appointment.id}
-                style={{
-                  cursor: "pointer",
-                  backgroundColor: index % 2 === 0 ? "" : "#f9f9f9",
-                }}
-                onClick={() => navigate(`/appointment/${appointment.id}`)}
-              >
-                <TableCell>
-                  {patient.first_name} {patient.last_name}
-                </TableCell>
-                <TableCell>
-                  {new Date(
-                    appointment.appointment_date * 1000
-                  ).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    ) : selected === "Prescriptions" ? (
-      <Table>
-        <TableCaption>A list of prescriptions.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Medication</TableHead>
-            <TableHead>Dosage</TableHead>
-            <TableHead>Patient</TableHead>
-            <TableHead>Start Date</TableHead>
-            <TableHead>End Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {doctorPres.map((pre, index) => {
-            const patient = patients.find((pat) => pat.id === pre.patient_id);
+  const renderTable = () => {
+    switch (selected) {
+      case "Patients":
+        return <PatientsTable />;
+      case "Appointments":
+        return <AppointmentsTable />;
+      case "Prescriptions":
+        return <PrescriptionsTable />;
+      default:
+        return null;
+    }
+  };
 
-            return (
-              <TableRow
-                key={pre.id}
-                style={{
-                  cursor: "pointer",
-                  backgroundColor: index % 2 === 0 ? "" : "#f9f9f9",
-                }}
-                onClick={() => navigate(`/prescription/${pre.id}`)}
-              >
-                <TableCell>{pre.medication}</TableCell>
-                <TableCell>{pre.dosage}</TableCell>
-                <TableCell>
-                  {patient.first_name} {patient.last_name}
-                </TableCell>
-                <TableCell>
-                  {new Date(pre.start_date * 1000).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {new Date(pre.end_date * 1000).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    ) : (
-      <></>
-    );
+  const onDeleteCallback = () => {
+    toast.success("Doctor deleted successfully");
+    refreshDoctors();
+    navigate("/doctors");
+  };
 
-  console.log("Doctor data: ", doctor);
-
-  return doctor.length !== 0 ? (
+  return doctor ? (
     <>
       <Button
         onClick={() => navigate(-1)}
@@ -238,26 +339,32 @@ export default function Show() {
           <p className="mb-2">Phone: {doctor.phone}</p>
         </CardContent>
         <CardFooter>
-          <div>
+          <div className="flex gap-2 ml-auto">
             <Button
-              onClick={() => navigate(`/doctor/edit/${doctor.id}`)}
+              className="cursor-pointer hover:border-blue-500"
               variant="outline"
-              className="w-full"
+              size="icon"
+              onClick={() => navigate(`/doctors/${doctor.id}/edit`)}
             >
-              Edit
+              <Pencil />
             </Button>
-            <Button
-              onClick={() => navigate(`/doctor/edit/${doctor.id}`)}
-              variant="outline"
-              className="w-full "
-            >
-              Delete
-            </Button>
+            <DeleteBtn
+              onDeleteCallback={onDeleteCallback}
+              resource="doctors"
+              id={doctor.id}
+            />{" "}
           </div>
         </CardFooter>
       </Card>
-      {Selector}
-      {selection}
+      <TabSelector
+        options={["Appointments", "Patients", "Prescriptions"]}
+        selected={selected}
+        onSelect={setSelected}
+        onSelectCallback={() =>
+          setSortColumn({ column: "name", ascending: true })
+        }
+      />
+      {renderTable()}
     </>
   ) : (
     <Loader name="doctor" />

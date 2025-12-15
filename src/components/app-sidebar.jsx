@@ -99,10 +99,8 @@ export function AppSidebar({ ...props }) {
 
   const checkActive = (url) => {
     if (location.pathname === "/" && url === "/") {
-      console.log("You are in dashboard");
       return true;
     } else if (url !== "/" && location.pathname.includes(url)) {
-      console.log("You are somewhere else");
       return true;
     }
     return false;
