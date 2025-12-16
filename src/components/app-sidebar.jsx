@@ -87,7 +87,7 @@ export function AppSidebar({ ...props }) {
       }
       window.history.replaceState({}, "");
     }
-  }, [message]);
+  }, [message, type]);
 
   const checkActive = (url) => {
     if (location.pathname === "/" && url === "/") {

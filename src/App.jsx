@@ -34,18 +34,19 @@ export default function App() {
             <AppSidebar variant="inset" />
             <SidebarInset>
               <SiteHeader />
-              {/* <Navbar onLogin={onLogin} loggedIn={loggedIn} /> */}
 
               <div className="flex flex-1 flex-col">
                 <div className="@container/main flex flex-1 flex-col gap-2">
                   <div className="flex flex-col gap-2 py-4 md:gap-2 md:py-6 mx-6">
                     {/* Main content */}
                     <Routes>
+                      {/* ROUTES WITHOUT AUTHENTICATION */}
                       <Route path="/" element={<Home />} />
                       <Route path="/doctors" element={<DoctorsIndex />} />
                       <Route path="/patients" element={<PatientsIndex />} />
 
                       <Route path="/" element={<ProtectedRoute />}>
+                        {/* DOCTORS ROUTES*/}
                         <Route
                           path="/doctors/:slug"
                           element={<DoctorsShow />}
