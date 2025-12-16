@@ -14,11 +14,9 @@ export function SiteHeader() {
     if (path.includes("-") || path.includes("%20")) {
       return path
         .split("-")
-        // .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .slice(0,-1)
         .join(" ")
-        .split("%20")
-        // .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+        .replace("%20", " ");
     }
 
     return path.charAt(0).toUpperCase() + path.slice(1);

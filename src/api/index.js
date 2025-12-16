@@ -2,17 +2,17 @@ import axios from '@/config/api';
 
 export const getAll = async (table) => {
   try {
-    let response= await axios.get(`/${table}`);
-    return response.data;
+    let {data} = await axios.get(`/${table}`);
+    return data;
   } catch (err) {
     console.log(err);
   }
 }; 
 
-export const getById = async (table, id) => {
+export const getById = async (url) => {
   try {
-    let response = await axios.get(`/${table}/${id}`); 
-    return response.data;
+    let {data} = await axios.get('/' + url); 
+    return data;
   } catch (err) {
     console.log(err);
   }
@@ -25,4 +25,8 @@ export const save = async (url, {arg}) => {
     url: `${url}/${id ?? ''}`,
     data,
   });
+};
+
+export const deleteById = async (url, { arg: id }) => {
+  await axios.delete(`${url}/${id}`); 
 };

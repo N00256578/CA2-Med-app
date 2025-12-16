@@ -26,8 +26,18 @@ export default function DoctorForm({ doctor }) {
 
   const submitForm = async (values) => {
     try {
-      save("doctors", { values, id: doctor?.id });
+      const response = await save("doctors", {
+        values,
+        id: doctor?.id ?? null,
+      });
+      navigate("/doctors", {
+        state: {
+          type: "success",
+          message: `Doctor ${doctor ? "updated" : "created"} successfully`,
+        },
+      });
     } catch (err) {
+      console.log(err);
       if (err.response.data.message.includes("phone")) {
         console.log("Setting phone error to true");
         setPhoneError(true);

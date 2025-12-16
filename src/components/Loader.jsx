@@ -22,7 +22,7 @@ function SpinnerEmpty({ name }) {
         <EmptyMedia variant="icon">
           <Spinner />
         </EmptyMedia>
-        <EmptyTitle>Loading {name}...</EmptyTitle>
+        <EmptyTitle>Loading...{name ? ` ${name}` : ""}</EmptyTitle>
         <EmptyDescription>
           Please wait. Do not refresh the page.
         </EmptyDescription>

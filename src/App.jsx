@@ -47,7 +47,7 @@ export default function App() {
 
                       <Route path="/" element={<ProtectedRoute />}>
                         <Route
-                          path="/doctors/:name"
+                          path="/doctors/:slug"
                           element={<DoctorsShow />}
                         />
                         <Route

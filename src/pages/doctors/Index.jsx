@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Filter } from "lucide-react";
-import DeleteBtn from "@/components/DeleteBtn";
+import { Eye, Pencil, Filter, Trash } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -11,32 +10,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { toast } from "sonner";
-import Loader from "@/components/Loader";
-import { useData } from "@/contexts/DataContext";
 import { useMemo, useState } from "react";
-import { SortableHeader } from "@/components/SortableTable";
 import { useSortColumn } from "@/hooks/useSortColumn";
+import { sortData } from "@/utils/sortData";
+import useSWR from "swr";
+import { deleteById, getAll } from "@/api";
+import AsyncData from "@/components/AsyncData";
+import useSWRMutation from "swr/mutation";
+import DataTable from "@/components/DataTable";
 
 export default function Index() {
-  const { doctors, loading, refreshDoctors } = useData();
   const { token } = useAuth();
   const { sortColumn, changeSortOrder } = useSortColumn();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [specFilter, setSpecFilter] = useState(new Set());
 
-  const navigate = useNavigate();
+  const { data: doctors = [], isLoading, error } = useSWR("doctors", getAll);
+  const { trigger: deleteDoctor, error: deleteError } = useSWRMutation(
+    "doctors",
+    deleteById
+  );
 
   const specialisations = useMemo(() => {
     return Array.from(
@@ -47,20 +43,20 @@ export default function Index() {
   const toggleSpec = (spec) => {
     setSpecFilter((prev) => {
       const next = new Set(prev);
-
       if (next.has(spec)) {
         next.delete(spec);
       } else {
         next.add(spec);
       }
-
       return next;
     });
   };
 
-  const doctorsVisible = useMemo(() => {
+  // Filter and sort doctors
+  const { tableData, tableConfig } = useMemo(() => {
     let result = [...doctors];
 
+    // Apply search filter
     if (search.trim() !== "") {
       const q = search.toLowerCase();
       result = result.filter(
@@ -71,52 +67,117 @@ export default function Index() {
       );
     }
 
+    // Apply specialisation filter
     if (specFilter.size > 0) {
       result = result.filter((d) => specFilter.has(d.specialisation));
     }
 
-    const { column, ascending } = sortColumn;
+    // Define comparators for sorting
+    const comparators = {
+      name: (a, b) => a.first_name.localeCompare(b.first_name),
+      email: (a, b) => a.email.localeCompare(b.email),
+      spec: (a, b) => a.specialisation.localeCompare(b.specialisation),
+    };
 
-    switch (column) {
-      case "name":
-        ascending
-          ? result.sort((a, b) => a.first_name.localeCompare(b.first_name))
-          : result.sort((a, b) => b.first_name.localeCompare(a.first_name));
-        break;
-      case "email":
-        ascending
-          ? result.sort((a, b) => a.email.localeCompare(b.email))
-          : result.sort((a, b) => b.email.localeCompare(a.email));
-        break;
-      case "spec":
-        ascending
-          ? result.sort((a, b) =>
-              a.specialisation.localeCompare(b.specialisation)
-            )
-          : result.sort((a, b) =>
-              b.specialisation.localeCompare(a.specialisation)
-            );
-        break;
+    // Define columns
+    const columns = [
+      {
+        key: "name",
+        label: "Name",
+        sortable: true,
+        render: (row) => `${row.first_name} ${row.last_name}`,
+      },
+      {
+        key: "email",
+        label: "Email",
+        sortable: true,
+      },
+      {
+        key: "phone",
+        label: "Phone number",
+        sortable: false,
+      },
+      {
+        key: "spec",
+        label: "Specialisation",
+        sortable: true,
+        render: (row) => row.specialisation,
+      },
+    ];
+
+    if (token) {
+      columns.push({
+        key: "actions",
+        label: "",
+        sortable: false,
+        render: (row) => (
+          <div className="flex gap-2 justify-end">
+            <Button
+              className="cursor-pointer hover:border-blue-500"
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(
+                  `/doctors/${row.first_name}-${row.last_name}-${row.id}`
+                );
+              }}
+            >
+              <Eye />
+            </Button>
+            <Button
+              className="cursor-pointer hover:border-blue-500"
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/doctors/${row.id}/edit`);
+              }}
+            >
+              <Pencil />
+            </Button>
+            <Button
+              className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteDoctor(row.id);
+                toast.success("Doctor deleted successfully");
+              }}
+            >
+              <Trash />
+            </Button>
+          </div>
+        ),
+      });
     }
 
-    return result;
-  }, [doctors, search, sortColumn, specFilter]);
+    const sortedData = sortData(
+      result,
+      sortColumn.column,
+      sortColumn.ascending,
+      comparators
+    );
 
-  if (loading) {
-    return <Loader name="doctors" />;
-  }
-
-  const onDeleteCallback = () => {
-    toast.success("Doctor deleted successfully");
-    refreshDoctors();
-  };
+    return {
+      tableData: sortedData,
+      tableConfig: {
+        columns,
+        caption: "A list of doctors.",
+        onRowClick: token
+          ? (row) => `/doctors/${row.first_name}-${row.last_name}-${row.id}`
+          : null,
+      },
+    };
+  }, [doctors, search, sortColumn, specFilter, token, navigate, deleteDoctor]);
 
   return (
     <>
       <div className="mb-6 flex items-center gap-4">
         {token && (
           <Button asChild variant="outline">
-            <Link to={`/doctors/create`}>Create New Doctor</Link>
+            <Link to="/doctors/create">Create New Doctor</Link>
           </Button>
         )}
 
@@ -125,9 +186,7 @@ export default function Index() {
           value={search}
           className="flex-1 block border border-gray-300 rounded-md px-3 py-2"
           placeholder="Search doctor..."
-          onChange={(e) => {
-            setSearch(e.target.value);
-          }}
+          onChange={(e) => setSearch(e.target.value)}
         />
 
         <DropdownMenu>
@@ -172,80 +231,16 @@ export default function Index() {
         </DropdownMenu>
       </div>
 
-      <Table>
-        <TableCaption>A list of doctors.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <SortableHeader
-              column="name"
-              label="Name"
-              sortColumn={sortColumn}
-              onClick={changeSortOrder}
-            />
-            <SortableHeader
-              column="email"
-              label="Email"
-              sortColumn={sortColumn}
-              onClick={changeSortOrder}
-            />
-            <TableHead>Phone number</TableHead>
-            <SortableHeader
-              column="spec"
-              label="Specialisation"
-              sortColumn={sortColumn}
-              onClick={changeSortOrder}
-            />
-            {token && <TableHead></TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {doctorsVisible.map((doctor, index) => (
-            <TableRow
-              key={doctor.id}
-              style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
-            >
-              <TableCell>
-                {doctor.first_name} {doctor.last_name}
-              </TableCell>
-              <TableCell>{doctor.email}</TableCell>
-              <TableCell>{doctor.phone}</TableCell>
-              <TableCell>{doctor.specialisation}</TableCell>
-              {token && (
-                <TableCell>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      className="cursor-pointer hover:border-blue-500"
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        navigate(
-                          `/doctors/${doctor.first_name}-${doctor.last_name}`,
-                          { state: { id: doctor.id } }
-                        )
-                      }
-                    >
-                      <Eye />
-                    </Button>
-                    <Button
-                      className="cursor-pointer hover:border-blue-500"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => navigate(`/doctors/${doctor.id}/edit`)}
-                    >
-                      <Pencil />
-                    </Button>
-                    <DeleteBtn
-                      onDeleteCallback={onDeleteCallback}
-                      resource="doctors"
-                      id={doctor.id}
-                    />
-                  </div>
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <AsyncData loading={isLoading} error={error || deleteError}>
+        <DataTable
+          data={tableData}
+          columns={tableConfig.columns}
+          caption={tableConfig.caption}
+          sortColumn={sortColumn}
+          onSort={changeSortOrder}
+          onRowClick={tableConfig.onRowClick}
+        />
+      </AsyncData>
     </>
   );
 }

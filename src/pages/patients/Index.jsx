@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, Eye, Pencil } from "lucide-react";
-import DeleteBtn from "@/components/DeleteBtn";
+import { ArrowDown, ArrowUp, Eye, Pencil, Trash } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 import {
@@ -189,11 +188,14 @@ export default function Index() {
                     >
                       <Pencil />
                     </Button>
-                    <DeleteBtn
-                      onDeleteCallback={onDeleteCallback}
-                      resource="patients"
-                      id={patient.id}
-                    />
+                    <Button
+                      className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onDeleteCallback(patient.id)}
+                    >
+                      <Trash />
+                    </Button>
                   </div>
                 </TableCell>
               )}
