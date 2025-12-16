@@ -19,6 +19,7 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import AsyncData from "@/components/AsyncData";
 import DataTable from "@/components/DataTable";
+import ConfirmDelete from "@/components/ConfirmDelete";
 
 export default function Show() {
   const { slug } = useParams();
@@ -251,14 +252,19 @@ export default function Show() {
                 >
                   <Pencil />
                 </Button>
-                <Button
-                  className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onDeleteCallback(doctor.id)}
+                <ConfirmDelete
+                  title="Delete doctor"
+                  description="This doctor will be permanently removed."
+                  onConfirm={() => onDeleteCallback(doctor.id)}
                 >
-                  <Trash />
-                </Button>
+                  <Button
+                    className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Trash />
+                  </Button>
+                </ConfirmDelete>
               </div>
             </CardFooter>
           </Card>

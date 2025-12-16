@@ -5,31 +5,44 @@ import { useNavigate } from "react-router";
 import * as Yup from "yup";
 import { useState } from "react";
 import { save } from "@/api";
-import { useData } from "@/contexts/DataContext";
+import useSWRMutation from "swr/mutation";
 
 export default function DoctorForm({ doctor }) {
   const navigate = useNavigate();
   const [phoneError, setPhoneError] = useState(false);
   const [mailError, setMailError] = useState(false);
-  const { loading } = useData();
+
+  const { trigger: saveDoctor, isMutating } = useSWRMutation("doctors", save);
 
   const DoctorSchema = Yup.object().shape({
-    first_name: Yup.string().required("First name is required"),
-    last_name: Yup.string().required("Last name is required"),
+    first_name: Yup.string()
+      .min(2, "First name must be at least 2 characters")
+      .max(255, "First name can be max 255 characters")
+      .required("First name is required"),
+    last_name: Yup.string()
+      .min(2, "Last name must be at least 2 characters")
+      .max(255, "Last name can be max 255 characters")
+      .required("Last name is required"),
     phone: Yup.string()
       .matches(/^[0-9]+$/, "Phone number must contain only digits")
       .length(10, "Phone number must be 10 digits")
       .required("Phone number is required"),
-    email: Yup.string().email("Invalid email").required("Email is required"),
+    email: Yup.string()
+      .email("Invalid email")
+      .matches(/^[\w-.]+@([\w-]+\.)+[a-zA-Z]{2,4}$/, "Invalid email format")
+      .required("Email is required"),
     specialisation: Yup.string().required("Specialisation is required"),
   });
 
-  const submitForm = async (values) => {
+  const handleSubmit = async (values) => {
+    setMailError(false);
+    setPhoneError(false);
     try {
-      const response = await save("doctors", {
-        values,
+      await saveDoctor({
         id: doctor?.id ?? null,
+        ...values,
       });
+
       navigate("/doctors", {
         state: {
           type: "success",
@@ -37,29 +50,24 @@ export default function DoctorForm({ doctor }) {
         },
       });
     } catch (err) {
-      console.log(err);
-      if (err.response.data.message.includes("phone")) {
-        console.log("Setting phone error to true");
-        setPhoneError(true);
+      console.error("Submit error:", err);
+
+      if (err.response?.data?.message) {
+        const errorMessage = err.response.data.message.toLowerCase();
+
+        if (errorMessage.includes("phone")) {
+          setPhoneError(true);
+        }
+        if (errorMessage.includes("email")) {
+          setMailError(true);
+        }
       }
-      if (err.response.data.message.includes("email")) {
-        console.log("Setting mail error to true");
-        setMailError(true);
-      }
-      console.log("Phone error:", phoneError);
     }
   };
 
-  const handleSubmit = (values) => {
-    setMailError(false);
-    setPhoneError(false);
-    submitForm(values);
-  };
-
-  return loading ? (
-    <Loader name="doctor" />
-  ) : (
+  return (
     <Formik
+      enableReinitialize
       initialValues={{
         first_name: doctor?.first_name || "",
         last_name: doctor?.last_name || "",
@@ -68,7 +76,7 @@ export default function DoctorForm({ doctor }) {
         specialisation: doctor?.specialisation || "",
       }}
       onSubmit={handleSubmit}
-      className="w-full "
+      className="w-full"
       validationSchema={DoctorSchema}
     >
       {({ errors, touched }) => (
@@ -155,6 +163,7 @@ export default function DoctorForm({ doctor }) {
                 variant="outline"
                 className="cursor-pointer"
                 onClick={() => navigate("/doctors")}
+                disabled={isMutating}
               >
                 Cancel
               </Button>

@@ -1,11 +1,6 @@
 import * as React from "react";
 import {
-  IconConfetti,
-  IconTheater,
   IconDashboard,
-  IconMicrophone2,
-  IconInnerShadowTop,
-  IconMusic,
   IconListCheck,
   IconStethoscope,
   IconBodyScan,
@@ -18,7 +13,6 @@ import { Link, useLocation } from "react-router";
 import { useEffect } from "react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavExamples } from "@/components/nav-examples";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,

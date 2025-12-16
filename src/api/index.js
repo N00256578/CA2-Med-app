@@ -21,7 +21,7 @@ export const getById = async (url) => {
 export const save = async (url, {arg}) => {
   const {id, ...data} = arg;
   return await axios({
-    method: id ? 'PUT' : 'POST',
+    method: id ? 'PATCH' : 'POST',
     url: `${url}/${id ?? ''}`,
     data,
   });

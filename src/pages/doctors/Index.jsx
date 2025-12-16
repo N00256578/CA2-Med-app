@@ -19,6 +19,7 @@ import { deleteById, getAll } from "@/api";
 import AsyncData from "@/components/AsyncData";
 import useSWRMutation from "swr/mutation";
 import DataTable from "@/components/DataTable";
+import ConfirmDelete from "@/components/ConfirmDelete";
 
 export default function Index() {
   const { token } = useAuth();
@@ -136,18 +137,24 @@ export default function Index() {
             >
               <Pencil />
             </Button>
-            <Button
-              className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
-              variant="outline"
-              size="icon"
-              onClick={(e) => {
+            <ConfirmDelete
+              title="Delete doctor"
+              description="This doctor will be permanently removed."
+              onConfirm={(e) => {
                 e.stopPropagation();
                 deleteDoctor(row.id);
                 toast.success("Doctor deleted successfully");
               }}
             >
-              <Trash />
-            </Button>
+              <Button
+                className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                variant="outline"
+                size="icon"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash />
+              </Button>
+            </ConfirmDelete>
           </div>
         ),
       });
