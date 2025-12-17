@@ -18,6 +18,7 @@ import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
 
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
+import RegisterForm from "./components/forms/RegisterForm";
 
 export default function App() {
   return (
@@ -45,6 +46,9 @@ export default function App() {
                       <Route path="/patients" element={<PatientsIndex />} />
 
                       <Route path="/" element={<ProtectedRoute />}>
+                        {/* REGISTER ROUTE*/}
+                        <Route path="/register" element={<RegisterForm />} />
+
                         {/* DOCTORS ROUTES*/}
                         <Route
                           path="/doctors/:slug"

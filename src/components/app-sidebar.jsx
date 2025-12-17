@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import Register from "./forms/Register";
+import RegisterForm from "./forms/RegisterForm";
 
 const data = {
   navMain: [
