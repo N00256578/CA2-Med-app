@@ -14,8 +14,7 @@ import DoctorsCreateOrEdit from "@/pages/doctors/CreateOrEdit";
 
 import PatientsIndex from "@/pages/patients/Index";
 import PatientsShow from "@/pages/patients/Show";
-// import PatientsCreate from "@/pages/patients/Create";
-// import PatientsEdit from "@/pages/patients/Edit";
+import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
 
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
@@ -60,9 +59,18 @@ export default function App() {
                           element={<DoctorsCreateOrEdit />}
                         />
 
+                        {/* PATIENTS ROUTES*/}
                         <Route
                           path="/patients/:slug"
                           element={<PatientsShow />}
+                        />
+                        <Route
+                          path="/patients/create"
+                          element={<PatientsCreateOrEdit />}
+                        />
+                        <Route
+                          path="/patients/:id/edit"
+                          element={<PatientsCreateOrEdit />}
                         />
                       </Route>
                     </Routes>

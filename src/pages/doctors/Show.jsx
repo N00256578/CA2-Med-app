@@ -240,8 +240,25 @@ export default function Show() {
               <CardDescription>{doctor.specialisation}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="mb-2">Email: {doctor.email}</p>
-              <p className="mb-2">Phone: {doctor.phone}</p>
+              <p className="mb-2">
+                Email:{" "}
+                <a
+                  href={`mailto:${doctor.email}`}
+                  className="hover:text-blue-900 hover:underline cursor-pointer"
+                >
+                  {doctor.email}
+                </a>
+              </p>
+
+              <p className="mb-2">
+                Phone:{" "}
+                <a
+                  href={`tel:${doctor.phone}`}
+                  className="hover:text-blue-900 hover:underline cursor-pointer"
+                >
+                  {doctor.phone}
+                </a>
+              </p>
             </CardContent>
             <CardFooter>
               <div className="flex gap-2 ml-auto">

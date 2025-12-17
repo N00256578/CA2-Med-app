@@ -30,3 +30,9 @@ export const save = async (url, {arg}) => {
 export const deleteById = async (url, { arg: id }) => {
   await axios.delete(`${url}/${id}`); 
 };
+
+export const post = async (url, {arg}) => {
+  const { data } = await axios.post(url, arg);
+
+  return data;
+}

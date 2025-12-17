@@ -255,11 +255,38 @@ export default function Show() {
               <CardTitle>
                 {patient.first_name} {patient.last_name}
               </CardTitle>
-              <CardDescription>{patient.specialisation}</CardDescription>
+              <CardDescription>
+                {new Date(patient.date_of_birth * 1000).toLocaleDateString(
+                  "en-GB",
+                  {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="mb-2">Email: {patient.email}</p>
-              <p className="mb-2">Phone: {patient.phone}</p>
+              <p className="mb-2">
+                Email:{" "}
+                <a
+                  href={`mailto:${patient.email}`}
+                  className="hover:text-blue-900 hover:underline cursor-pointer"
+                >
+                  {patient.email}
+                </a>
+              </p>
+
+              <p className="mb-2">
+                Phone:{" "}
+                <a
+                  href={`tel:${patient.phone}`}
+                  className="hover:text-blue-900 hover:underline cursor-pointer"
+                >
+                  {patient.phone}
+                </a>
+              </p>
+              <p className="mb-2">Address: {patient.address}</p>
             </CardContent>
             <CardFooter>
               <div className="flex gap-2 ml-auto">

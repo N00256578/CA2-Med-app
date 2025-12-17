@@ -1,85 +1,79 @@
-import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import TextInputLiveFeedback from "../TextInputLiveFeedback";
 
 export default function LoginForm() {
-  const [form, setForm] = useState({});
-  const { onLogin } = useAuth();
+  const { login } = useAuth();
 
-  const handleForm = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const loginSchema = Yup.object({
+    email: Yup.string()
+      .email("Invalid email")
+      .matches(/^[\w-.]+@([\w-]+\.)+[a-zA-Z]{2,4}$/, "Invalid email format")
+      .required("Email is required"),
+    password: Yup.string()
+      .min(8, "Password must be at least 8 characters")
+      .required("Password is required"),
+  });
 
-  const submitForm = (e) => {
-    e.preventDefault();
-    onLogin(form.email, form.password);
-  };
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    const success = await login(values.email, values.password);
 
-  const handleKeyUp = (e) => {
-    if (e.key === "Enter") {
-      submitForm(e);
+    if (!success) {
+      setErrors({ email: "Invalid credentials" });
     }
+
+    setSubmitting(false);
   };
 
   return (
-    <>
-      CHANGE THE LOGINFORM AND THE DELETE BUTTON!!!!!
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submitForm}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="email"
-                  required
-                  onChange={handleForm}
-                  onKeyUp={handleKeyUp}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  onChange={handleForm}
-                  onKeyUp={handleKeyUp}
-                />
-              </div>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex-col gap-2">
-          <Button variant="outline" onClick={submitForm} className="w-full">
-            Login
-          </Button>
-        </CardFooter>
-      </Card>
-    </>
+    <Formik
+      initialValues={{ email: "", password: "" }}
+      validationSchema={loginSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ isSubmitting }) => (
+        <Form className="flex flex-col gap-6">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Login to your account</CardTitle>
+              <CardDescription>
+                Enter your email below to login to your account
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <TextInputLiveFeedback
+                label="Email"
+                name="email"
+                placeholder="Email"
+              />
+
+              <TextInputLiveFeedback
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="Password"
+              />
+            </CardContent>
+
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                Login
+              </Button>
+            </CardFooter>
+          </Card>
+        </Form>
+      )}
+    </Formik>
   );
 }
