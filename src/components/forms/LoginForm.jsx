@@ -24,8 +24,6 @@ export default function LoginForm() {
 
   const submitForm = (e) => {
     e.preventDefault();
-    console.log(form);
-
     onLogin(form.email, form.password);
   };
 

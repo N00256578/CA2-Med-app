@@ -12,11 +12,7 @@ export function SiteHeader() {
       location.pathname.split("/").filter(Boolean).pop() || "dashboard";
 
     if (path.includes("-") || path.includes("%20")) {
-      return path
-        .split("-")
-        .slice(0,-1)
-        .join(" ")
-        .replace("%20", " ");
+      return path.split("-").slice(0, -1).join(" ").split("%20").join(" ");
     }
 
     return path.charAt(0).toUpperCase() + path.slice(1);

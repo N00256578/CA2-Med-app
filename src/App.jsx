@@ -13,7 +13,7 @@ import DoctorsShow from "@/pages/doctors/Show";
 import DoctorsCreateOrEdit from "@/pages/doctors/CreateOrEdit";
 
 import PatientsIndex from "@/pages/patients/Index";
-// import PatientsShow from "@/pages/patients/Show";
+import PatientsShow from "@/pages/patients/Show";
 // import PatientsCreate from "@/pages/patients/Create";
 // import PatientsEdit from "@/pages/patients/Edit";
 
@@ -58,6 +58,11 @@ export default function App() {
                         <Route
                           path="/doctors/create"
                           element={<DoctorsCreateOrEdit />}
+                        />
+
+                        <Route
+                          path="/patients/:slug"
+                          element={<PatientsShow />}
                         />
                       </Route>
                     </Routes>

@@ -1,5 +1,9 @@
-import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { deleteById, getAll, getById } from "@/api";
+import AsyncData from "@/components/AsyncData";
+import ConfirmDelete from "@/components/ConfirmDelete";
+import DataTable from "@/components/DataTable";
+import { TabSelector } from "@/components/TabSelector";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,18 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { Pencil, Trash } from "lucide-react";
-import { sortData } from "@/utils/sortData";
-import { TabSelector } from "@/components/TabSelector";
 import { useSortColumn } from "@/hooks/useSortColumn";
-import { deleteById, getAll, getById } from "@/api";
+import { sortData } from "@/utils/sortData";
+import { Pencil, Trash } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import AsyncData from "@/components/AsyncData";
-import DataTable from "@/components/DataTable";
-import ConfirmDelete from "@/components/ConfirmDelete";
 
 export default function Show() {
   const { slug } = useParams();
@@ -29,66 +29,71 @@ export default function Show() {
 
   const id = Number(slug.split("-").pop());
 
-  const { trigger: deleteDoctor, error: deleteError } = useSWRMutation(
-    "doctors",
+  const { trigger: deletePatient, error: deleteError } = useSWRMutation(
+    "patients",
     deleteById
   );
 
   const {
-    data: doctor,
-    isLoading: loadingDoctor,
-    error: errorDoctor,
-  } = useSWR(`doctors/${id}`, getById);
+    data: patient,
+    isLoading: loadingPatient,
+    error: errorPatient,
+  } = useSWR(`patients/${id}`, getById);
+
   const {
     data: appointments = [],
     isLoading: loadingAppointments,
     error: errorAppointments,
   } = useSWR("appointments", getAll);
   const {
-    data: patients = [],
-    isLoading: loadingPatients,
-    error: errorPatients,
-  } = useSWR("patients", getAll);
+    data: doctors = [],
+    isLoading: loadingDoctors,
+    error: errorDoctors,
+  } = useSWR("doctors", getAll);
+  const {
+    data: diagnoses = [],
+    isLoading: loadingDiagnoses,
+    error: errorDiagnoses,
+  } = useSWR("diagnoses", getAll);
   const {
     data: prescriptions = [],
     isLoading: loadingPrescriptions,
     error: errorPrescriptions,
   } = useSWR("prescriptions", getAll);
 
-  // Build patientsById lookup map
-  const patientsById = useMemo(() => {
+  // Build doctorsById lookup map
+  const doctorsById = useMemo(() => {
     const map = new Map();
-    patients.forEach((p) => map.set(p.id, p));
+    doctors.forEach((d) => map.set(d.id, d));
     return map;
-  }, [patients]);
+  }, [doctors]);
 
-  // Filter doctor's appointments
-  const doctorAppointments = useMemo(() => {
-    return appointments.filter((app) => app.doctor_id === id);
+  // Filter patient's appointments
+  const patientAppointments = useMemo(() => {
+    return appointments.filter((app) => app.patient_id === id);
   }, [id, appointments]);
 
   // Get sorted table data based on selected tab
   const { tableData, tableConfig } = useMemo(() => {
     const configs = {
       Appointments: {
-        data: doctorAppointments
+        data: patientAppointments
           .map((app) => ({
             ...app,
-            patient: patientsById.get(app.patient_id),
+            doctor: doctorsById.get(app.doctor_id),
           }))
-          .filter((app) => app.patient),
+          .filter((app) => app.doctor),
         comparators: {
           name: (a, b) =>
-            a.patient.first_name.localeCompare(b.patient.first_name),
+            a.doctor.first_name.localeCompare(b.doctor.first_name),
           date: (a, b) => a.appointment_date - b.appointment_date,
         },
         columns: [
           {
             key: "name",
-            label: "Patient",
+            label: "Doctor",
             sortable: true,
-            render: (row) =>
-              `${row.patient.first_name} ${row.patient.last_name}`,
+            render: (row) => `${row.doctor.first_name} ${row.doctor.last_name}`,
           },
           {
             key: "date",
@@ -99,15 +104,16 @@ export default function Show() {
           },
         ],
         caption: "A list of appointments.",
-        onRowClick: (row) => `/appointment/${row.id}`,
+        onRowClick: (row) => `/appointments/${row.id}`,
       },
-      Patients: {
-        data: patients.filter((pat) =>
-          doctorAppointments.some((app) => app.patient_id === pat.id)
+      Doctors: {
+        data: doctors.filter((doc) =>
+          patientAppointments.some((app) => app.doctor_id === doc.id)
         ),
         comparators: {
           name: (a, b) => a.first_name.localeCompare(b.first_name),
-          birthday: (a, b) => a.date_of_birth - b.date_of_birth,
+          specialisation: (a, b) =>
+            a.specialisation.localeCompare(b.specialisation),
           email: (a, b) => a.email.localeCompare(b.email),
         },
         columns: [
@@ -118,43 +124,52 @@ export default function Show() {
             render: (row) => `${row.first_name} ${row.last_name}`,
           },
           {
-            key: "birthday",
-            label: "Date of Birth",
+            key: "specialisation",
+            label: "Specialisation",
             sortable: true,
-            render: (row) =>
-              new Date(row.date_of_birth * 1000).toLocaleDateString(),
+            render: (row) => row.specialisation,
           },
           { key: "email", label: "Email", sortable: true },
           { key: "phone", label: "Phone number", sortable: false },
         ],
-        caption: "A list of patients.",
+        caption: "A list of doctors.",
         onRowClick: (row) =>
-          `/patients/${row.first_name}-${row.last_name}-${row.id}`,
+          `/doctors/${row.first_name}-${row.last_name}-${row.id}`,
+      },
+      Diagnoses: {
+        data: diagnoses.filter((diag) => diag.patient_id === patient?.id),
+        comparators: {
+          name: (a, b) => a.condition.localeCompare(b.condition),
+          date: (a, b) => a.diagnosis_date - b.diagnosis_date,
+        },
+        columns: [
+          {
+            key: "name",
+            label: "Name",
+            sortable: true,
+            render: (row) => row.condition,
+          },
+          {
+            key: "date",
+            label: "Diagnosis Date",
+            sortable: true,
+            render: (row) =>
+              new Date(row.diagnosis_date * 1000).toLocaleDateString(),
+          },
+        ],
+        caption: "A list of diagnoses.",
+        onRowClick: (row) => `/diagnoses/${row.id}`,
       },
       Prescriptions: {
         data: prescriptions
-          .filter((pre) => pre.doctor_id === doctor?.id)
-          .filter((pre) => patientsById.has(pre.patient_id)),
+          .filter((pre) => pre.patient_id === patient?.id)
+          .filter((pre) => doctorsById.has(pre.doctor_id)),
         comparators: {
-          name: (a, b) => {
-            const pa = patientsById.get(a.patient_id);
-            const pb = patientsById.get(b.patient_id);
-            return pa.first_name.localeCompare(pb.first_name);
-          },
           med: (a, b) => a.medication.localeCompare(b.medication),
           "start-date": (a, b) => a.start_date - b.start_date,
           "end-date": (a, b) => a.end_date - b.end_date,
         },
         columns: [
-          {
-            key: "name",
-            label: "Patient",
-            sortable: true,
-            render: (row) => {
-              const patient = patientsById.get(row.patient_id);
-              return `${patient.first_name} ${patient.last_name}`;
-            },
-          },
           {
             key: "med",
             label: "Medication",
@@ -193,35 +208,38 @@ export default function Show() {
   }, [
     selected,
     sortColumn,
-    doctorAppointments,
-    patients,
+    patientAppointments,
+    doctors,
     prescriptions,
-    doctor,
-    patientsById,
+    diagnoses,
+    patient,
+    doctorsById,
   ]);
 
   const onDeleteCallback = (id) => {
-    deleteDoctor(id);
-    toast.success("Doctor deleted successfully");
-    navigate("/doctors");
+    deletePatient(id);
+    toast.success("Patient deleted successfully");
+    navigate("/patients");
   };
 
   const isLoading =
-    loadingDoctor ||
+    loadingPatient ||
+    loadingDoctors ||
     loadingAppointments ||
-    loadingPatients ||
+    loadingDiagnoses ||
     loadingPrescriptions;
   const hasError =
-    errorDoctor ||
+    errorPatient ||
+    errorDoctors ||
     errorAppointments ||
-    errorPatients ||
+    errorDiagnoses ||
     errorPrescriptions ||
     deleteError;
 
   return (
     <AsyncData loading={isLoading} error={hasError}>
-      {!doctor ? (
-        <div>Doctor not found</div>
+      {!patient ? (
+        <div>Patient not found</div>
       ) : (
         <>
           <Button
@@ -235,13 +253,13 @@ export default function Show() {
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>
-                {doctor.first_name} {doctor.last_name}
+                {patient.first_name} {patient.last_name}
               </CardTitle>
-              <CardDescription>{doctor.specialisation}</CardDescription>
+              <CardDescription>{patient.specialisation}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="mb-2">Email: {doctor.email}</p>
-              <p className="mb-2">Phone: {doctor.phone}</p>
+              <p className="mb-2">Email: {patient.email}</p>
+              <p className="mb-2">Phone: {patient.phone}</p>
             </CardContent>
             <CardFooter>
               <div className="flex gap-2 ml-auto">
@@ -249,14 +267,14 @@ export default function Show() {
                   className="cursor-pointer hover:border-blue-500"
                   variant="outline"
                   size="icon"
-                  onClick={() => navigate(`/doctors/${doctor.id}/edit`)}
+                  onClick={() => navigate(`/patients/${patient.id}/edit`)}
                 >
                   <Pencil />
                 </Button>
                 <ConfirmDelete
-                  title="Delete doctor"
-                  description="This doctor will be permanently removed."
-                  onConfirm={() => onDeleteCallback(doctor.id)}
+                  title="Delete patient"
+                  description="This patient will be permanently removed."
+                  onConfirm={() => onDeleteCallback(patient.id)}
                 >
                   <Button
                     className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
@@ -271,7 +289,7 @@ export default function Show() {
           </Card>
 
           <TabSelector
-            options={["Appointments", "Patients", "Prescriptions"]}
+            options={["Appointments", "Doctors", "Diagnoses", "Prescriptions"]}
             selected={selected}
             onSelect={setSelected}
             onSelectCallback={() =>
