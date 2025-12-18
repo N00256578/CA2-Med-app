@@ -84,7 +84,7 @@ export default function PatientForm({ patient }) {
         email: patient?.email || "",
         address: patient?.address || "",
         date_of_birth: patient?.date_of_birth
-          ? patient.date_of_birth
+          ? new Date(patient.date_of_birth * 1000).toISOString().split("T")[0]
           : "2000-01-01",
       }}
       onSubmit={handleSubmit}

@@ -337,7 +337,7 @@ export default function AppointmentForm({ appointment }) {
                 type="button"
                 variant="outline"
                 className="cursor-pointer"
-                onClick={() => navigate("/appointments")}
+                onClick={() => navigate(-1)}
                 disabled={isMutating || isSubmitting}
               >
                 Cancel

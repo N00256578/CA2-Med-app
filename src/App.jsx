@@ -19,6 +19,8 @@ import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
 import AppointmentsIndex from "@/pages/appointments/Index";
 import AppointmentsCreateOrEdit from "@/pages/appointments/CreateOrEdit";
 
+import DiagnosesCreateOrEdit from "@/pages/diagnoses/CreateOrEdit";
+
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
 import RegisterForm from "./components/forms/RegisterForm";
@@ -79,6 +81,19 @@ export default function App() {
                           path="/patients/:id/edit"
                           element={<PatientsCreateOrEdit />}
                         />
+
+                        <Route
+                          path="/patients/:id/diagnoses/create"
+                          element={<DiagnosesCreateOrEdit />}
+                        />
+                        <Route
+                          path="/patients/:id/diagnoses/:diag"
+                          element={<DiagnosesCreateOrEdit />}
+                        />
+                        {/* <Route
+                          path="/patients/:id/prescriptions/create"
+                          element={<PrescriptionsCreateOrEdit />}
+                        /> */}
 
                         {/* APPOINTMENTS ROUTES */}
                         <Route

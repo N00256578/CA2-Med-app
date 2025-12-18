@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/card";
 import { useSortColumn } from "@/hooks/useSortColumn";
 import { sortData } from "@/utils/sortData";
+import { IconBodyScan, IconPillFilled } from "@tabler/icons-react";
 import { Pencil, Trash } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
@@ -31,6 +32,11 @@ export default function Show() {
 
   const { trigger: deletePatient, error: deleteError } = useSWRMutation(
     "patients",
+    deleteById
+  );
+
+  const { trigger: deleteAppointment, error: deleteAppError } = useSWRMutation(
+    "appointments",
     deleteById
   );
 
@@ -94,6 +100,10 @@ export default function Show() {
             label: "Doctor",
             sortable: true,
             render: (row) => `${row.doctor.first_name} ${row.doctor.last_name}`,
+            onClick: (row) =>
+              navigate(
+                `/doctors/${row.doctor.first_name}-${row.doctor.last_name}-${row.doctor.id}`
+              ),
           },
           {
             key: "date",
@@ -109,9 +119,47 @@ export default function Show() {
                 }
               ),
           },
+          {
+            key: "actions",
+            label: "",
+            sortable: false,
+            render: (row) => (
+              <div className="flex gap-2 justify-end">
+                <Button
+                  className="cursor-pointer hover:border-blue-500"
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/appointments/${row.id}/edit`);
+                  }}
+                >
+                  <Pencil />
+                </Button>
+                <ConfirmDelete
+                  title="Delete appointment"
+                  description="This appointment will be permanently removed."
+                  onConfirm={(e) => {
+                    e.stopPropagation();
+                    deleteAppointment(row.id);
+                    toast.success("Appointment deleted successfully");
+                  }}
+                >
+                  <Button
+                    className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Trash />
+                  </Button>
+                </ConfirmDelete>
+              </div>
+            ),
+          },
         ],
         caption: "A list of appointments.",
-        onRowClick: (row) => `/appointments/${row.id}`,
+        // onRowClick: (row) =>
+        //   `/doctors/${row.doctor.first_name}-${row.doctor.last_name}-${row.doctor.id}`,
       },
       Doctors: {
         data: doctors.filter((doc) =>
@@ -234,6 +282,8 @@ export default function Show() {
     diagnoses,
     patient,
     doctorsById,
+    navigate,
+    deleteAppointment,
   ]);
 
   const onDeleteCallback = (id) => {
@@ -254,6 +304,7 @@ export default function Show() {
     errorAppointments ||
     errorDiagnoses ||
     errorPrescriptions ||
+    deleteAppError ||
     deleteError;
 
   return (
@@ -270,70 +321,86 @@ export default function Show() {
             Back
           </Button>
 
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>
-                {patient.first_name} {patient.last_name}
-              </CardTitle>
-              <CardDescription>
-                {new Date(patient.date_of_birth * 1000).toLocaleDateString(
-                  "en-GB",
-                  {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  }
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-2">
-                Email:{" "}
-                <a
-                  href={`mailto:${patient.email}`}
-                  className="hover:text-blue-900 hover:underline cursor-pointer"
-                >
-                  {patient.email}
-                </a>
-              </p>
+          <div className="flex gap-4 items-start mb-6">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>
+                  {patient.first_name} {patient.last_name}
+                </CardTitle>
+                <CardDescription>
+                  {new Date(patient.date_of_birth * 1000).toLocaleDateString(
+                    "en-GB",
+                    {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-2">
+                  Email:{" "}
+                  <a
+                    href={`mailto:${patient.email}`}
+                    className="hover:text-blue-900 hover:underline cursor-pointer"
+                  >
+                    {patient.email}
+                  </a>
+                </p>
 
-              <p className="mb-2">
-                Phone:{" "}
-                <a
-                  href={`tel:${patient.phone}`}
-                  className="hover:text-blue-900 hover:underline cursor-pointer"
-                >
-                  {patient.phone}
-                </a>
-              </p>
-              <p className="mb-2">Address: {patient.address}</p>
-            </CardContent>
-            <CardFooter>
-              <div className="flex gap-2 ml-auto">
-                <Button
-                  className="cursor-pointer hover:border-blue-500"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => navigate(`/patients/${patient.id}/edit`)}
-                >
-                  <Pencil />
-                </Button>
-                <ConfirmDelete
-                  title="Delete patient"
-                  description="This patient will be permanently removed."
-                  onConfirm={() => onDeleteCallback(patient.id)}
-                >
+                <p className="mb-2">
+                  Phone:{" "}
+                  <a
+                    href={`tel:${patient.phone}`}
+                    className="hover:text-blue-900 hover:underline cursor-pointer"
+                  >
+                    {patient.phone}
+                  </a>
+                </p>
+                <p className="mb-2">Address: {patient.address}</p>
+              </CardContent>
+              <CardFooter>
+                <div className="flex gap-2 ml-auto">
                   <Button
-                    className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                    className="cursor-pointer hover:border-blue-500"
                     variant="outline"
                     size="icon"
+                    onClick={() => navigate(`/patients/${patient.id}/edit`)}
                   >
-                    <Trash />
+                    <Pencil />
                   </Button>
-                </ConfirmDelete>
-              </div>
-            </CardFooter>
-          </Card>
+                  <ConfirmDelete
+                    title="Delete patient"
+                    description="This patient will be permanently removed."
+                    onConfirm={() => onDeleteCallback(patient.id)}
+                  >
+                    <Button
+                      className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                      variant="outline"
+                      size="icon"
+                    >
+                      <Trash />
+                    </Button>
+                  </ConfirmDelete>
+                </div>
+              </CardFooter>
+            </Card>
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline">
+                <Link to={`/patients/${patient.id}/diagnoses/create`}>
+                  <IconBodyScan />
+                  Add Diagnosis
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to={`/patients/${patient.id}/prescription/create`}>
+                  <IconPillFilled />
+                  Add Prescription
+                </Link>
+              </Button>
+            </div>
+          </div>
 
           <TabSelector
             options={["Appointments", "Doctors", "Diagnoses", "Prescriptions"]}

@@ -48,23 +48,16 @@ const data = {
       url: "/appointments",
       icon: Calendar1Icon,
     },
-    {
-      title: "Diagnoses",
-      url: "/diagnoses",
-      icon: IconBodyScan,
-    },
-    {
-      title: "Prescriptions",
-      url: "/prescriptions",
-      icon: IconPillFilled,
-    },
-  ],
-  examples: [
-    {
-      name: "Forms & Validation",
-      url: "/forms",
-      icon: IconListCheck,
-    },
+    // {
+    //   title: "Diagnoses",
+    //   url: "/diagnoses",
+    //   icon: IconBodyScan,
+    // },
+    // {
+    //   title: "Prescriptions",
+    //   url: "/prescriptions",
+    //   icon: IconPillFilled,
+    // },
   ],
 };
 
