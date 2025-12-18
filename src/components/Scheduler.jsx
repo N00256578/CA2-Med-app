@@ -3,8 +3,11 @@ import { useMemo } from "react";
 import useSWR from "swr";
 import { getAll } from "@/api";
 import AsyncData from "./AsyncData";
+import { useNavigate } from "react-router";
 
 const Scheduler = () => {
+  const navigate = useNavigate();
+
   const {
     data: doctors = [],
     isLoading: doctorsLoading,
@@ -51,15 +54,25 @@ const Scheduler = () => {
       startDate: new Date().toISOString().split("T")[0],
       cellDuration: 60,
       cellWidth: 67.5,
-      resources: doctors.map((doctor) => ({
-        id: doctor.id,
-        name: doctor.first_name + " " + doctor.last_name,
-      })),
+      resources: doctors
+        .map((doctor) => ({
+          id: doctor.id,
+          name: doctor.first_name + " " + doctor.last_name,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
       events: events,
       eventResizeHandling: "Disabled",
       eventMoveHandling: "Disabled",
       onEventClick: (args) => {
-        alert(`Link to event: ${args.e.data.id}`);
+        const patient = patients.find((pat) => {
+          const patientId = appointments.find(
+            (app) => app.id === args.e.data.id
+          ).patient_id;
+          return pat.id === patientId;
+        });
+        navigate(
+          `/patients/${patient.first_name}-${patient.first_name}-${patient.id}`
+        );
       },
     }),
     [doctors, events]

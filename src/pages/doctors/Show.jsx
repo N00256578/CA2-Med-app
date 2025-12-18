@@ -34,6 +34,11 @@ export default function Show() {
     deleteById
   );
 
+  const { trigger: deleteAppointment, error: deleteAppError } = useSWRMutation(
+    "appointments",
+    deleteById
+  );
+
   const {
     data: doctor,
     isLoading: loadingDoctor,
@@ -89,17 +94,64 @@ export default function Show() {
             sortable: true,
             render: (row) =>
               `${row.patient.first_name} ${row.patient.last_name}`,
+            onClick: (row) =>
+              navigate(
+                `/patients/${row.patient.first_name}-${row.patient.last_name}-${row.patient.id}`
+              ),
           },
           {
             key: "date",
             label: "Date",
             sortable: true,
             render: (row) =>
-              new Date(row.appointment_date * 1000).toLocaleDateString(),
+              new Date(row.appointment_date * 1000).toLocaleDateString(
+                "en-GB",
+                {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                }
+              ),
+          },
+          {
+            key: "actions",
+            label: "",
+            sortable: false,
+            render: (row) => (
+              <div className="flex gap-2 justify-end">
+                <Button
+                  className="cursor-pointer hover:border-blue-500"
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/appointments/${row.id}/edit`);
+                  }}
+                >
+                  <Pencil />
+                </Button>
+                <ConfirmDelete
+                  title="Delete appointment"
+                  description="This appointment will be permanently removed."
+                  onConfirm={(e) => {
+                    e.stopPropagation();
+                    deleteAppointment(row.id);
+                    toast.success("Appointment deleted successfully");
+                  }}
+                >
+                  <Button
+                    className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Trash />
+                  </Button>
+                </ConfirmDelete>
+              </div>
+            ),
           },
         ],
         caption: "A list of appointments.",
-        onRowClick: (row) => `/appointment/${row.id}`,
       },
       Patients: {
         data: patients.filter((pat) =>
@@ -122,7 +174,11 @@ export default function Show() {
             label: "Date of Birth",
             sortable: true,
             render: (row) =>
-              new Date(row.date_of_birth * 1000).toLocaleDateString(),
+              new Date(row.date_of_birth * 1000).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }),
           },
           { key: "email", label: "Email", sortable: true },
           { key: "phone", label: "Phone number", sortable: false },
@@ -167,13 +223,22 @@ export default function Show() {
             label: "Start Date",
             sortable: true,
             render: (row) =>
-              new Date(row.start_date * 1000).toLocaleDateString(),
+              new Date(row.start_date * 1000).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }),
           },
           {
             key: "end-date",
             label: "End Date",
             sortable: true,
-            render: (row) => new Date(row.end_date * 1000).toLocaleDateString(),
+            render: (row) =>
+              new Date(row.end_date * 1000).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }),
           },
         ],
         caption: "A list of prescriptions.",
@@ -216,6 +281,7 @@ export default function Show() {
     errorAppointments ||
     errorPatients ||
     errorPrescriptions ||
+    deleteAppError ||
     deleteError;
 
   return (

@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import RegisterForm from "./forms/RegisterForm";
 
 const data = {
   navMain: [
@@ -46,26 +45,19 @@ const data = {
     },
     {
       title: "Appointments",
-      url: "#",
+      url: "/appointments",
       icon: Calendar1Icon,
     },
-    {
-      title: "Diagnoses",
-      url: "#",
-      icon: IconBodyScan,
-    },
-    {
-      title: "Prescriptions",
-      url: "#",
-      icon: IconPillFilled,
-    },
-  ],
-  examples: [
-    {
-      name: "Forms & Validation",
-      url: "/forms",
-      icon: IconListCheck,
-    },
+    // {
+    //   title: "Diagnoses",
+    //   url: "/diagnoses",
+    //   icon: IconBodyScan,
+    // },
+    // {
+    //   title: "Prescriptions",
+    //   url: "/prescriptions",
+    //   icon: IconPillFilled,
+    // },
   ],
 };
 
@@ -109,7 +101,7 @@ export function AppSidebar({ ...props }) {
                 asChild
                 className="data-[slot=sidebar-menu-button]:!p-1.5"
               >
-                <a href="#">
+                <a href="/">
                   <HospitalIcon className="!size-5" />
                   <span className="text-base font-semibold">
                     Medical Clinic

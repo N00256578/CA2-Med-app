@@ -60,7 +60,11 @@ export default function Index() {
         label: "Date of Birth",
         sortable: true,
         render: (row) =>
-          new Date(row.date_of_birth * 1000).toLocaleDateString(),
+          new Date(row.date_of_birth * 1000).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          }),
       },
       { key: "email", label: "Email", sortable: true },
       { key: "phone", label: "Phone number", sortable: false },
@@ -168,107 +172,6 @@ export default function Index() {
           onRowClick={tableConfig.onRowClick}
         />
       </AsyncData>
-{/* 
-      <Table>
-        <TableCaption>A list of patients.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead
-              onClick={() => changeSortOrder("name")}
-              className="cursor-pointer"
-            >
-              <div className="flex">
-                Name
-                {sortColumn.column === "name" ? (
-                  <div className="ml-auto">
-                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
-                  </div>
-                ) : null}
-              </div>
-            </TableHead>
-            <TableHead
-              onClick={() => changeSortOrder("birthday")}
-              className="cursor-pointer"
-            >
-              <div className="flex">
-                Birthdate
-                {sortColumn.column === "birthday" ? (
-                  <div className="ml-auto">
-                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
-                  </div>
-                ) : null}
-              </div>
-            </TableHead>
-            <TableHead
-              onClick={() => changeSortOrder("email")}
-              className="cursor-pointer"
-            >
-              <div className="flex">
-                Email
-                {sortColumn.column === "email" ? (
-                  <div className="ml-auto">
-                    {sortColumn.ascending ? <ArrowDown /> : <ArrowUp />}
-                  </div>
-                ) : null}
-              </div>
-            </TableHead>
-            <TableHead>Phone number</TableHead>
-            {token && <TableHead></TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {patientsVisible.map((patient, index) => (
-            <TableRow
-              key={patient.id}
-              style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
-            >
-              <TableCell>
-                {patient.first_name} {patient.last_name}
-              </TableCell>
-              <TableCell>
-                {new Date(patient.date_of_birth * 1000).toLocaleDateString()}
-              </TableCell>
-              <TableCell>{patient.email}</TableCell>
-              <TableCell>{patient.phone}</TableCell>
-              {token && (
-                <TableCell>
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      className="cursor-pointer hover:border-blue-500"
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        navigate(
-                          `/patients/${patient.first_name}-${patient.last_name}`,
-                          { state: { id: patient.id } }
-                        )
-                      }
-                    >
-                      <Eye />
-                    </Button>
-                    <Button
-                      className="cursor-pointer hover:border-blue-500"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => navigate(`/doctors/${patient.id}/edit`)}
-                    >
-                      <Pencil />
-                    </Button>
-                    <Button
-                      className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => onDeleteCallback(patient.id)}
-                    >
-                      <Trash />
-                    </Button>
-                  </div>
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table> */}
     </>
   );
 }

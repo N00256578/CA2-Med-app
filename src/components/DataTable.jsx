@@ -44,12 +44,21 @@ export default function DataTable({
         {data.map((row, index) => (
           <TableRow
             key={row.id}
-            className="cursor-pointer hover:bg-gray-100"
-            style={{ backgroundColor: index % 2 !== 0 ? "" : "#f9f9f9" }}
+            className={onRowClick ? "cursor-pointer hover:bg-gray-100" : ""}
+            style={{ backgroundColor: index % 2 === 0 ? "" : "#f9f9f9" }}
             onClick={() => onRowClick && navigate(onRowClick(row))}
           >
             {columns.map((col) => (
-              <TableCell key={col.key}>
+              <TableCell
+                key={col.key}
+                className={col.onClick ? "cursor-pointer hover:underline" : ""}
+                onClick={(e) => {
+                  if (col.onClick) {
+                    e.stopPropagation(); // Prevent row click
+                    col.onClick(row);
+                  }
+                }}
+              >
                 {col.render ? col.render(row) : row[col.key]}
               </TableCell>
             ))}

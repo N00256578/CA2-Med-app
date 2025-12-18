@@ -16,6 +16,12 @@ import PatientsIndex from "@/pages/patients/Index";
 import PatientsShow from "@/pages/patients/Show";
 import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
 
+import AppointmentsIndex from "@/pages/appointments/Index";
+import AppointmentsCreateOrEdit from "@/pages/appointments/CreateOrEdit";
+
+import DiagnosesCreateOrEdit from "@/pages/diagnoses/CreateOrEdit";
+import PrescriptionsCreateOrEdit from "@/pages/prescriptions/CreateOrEdit";
+
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
 import RegisterForm from "./components/forms/RegisterForm";
@@ -75,6 +81,37 @@ export default function App() {
                         <Route
                           path="/patients/:id/edit"
                           element={<PatientsCreateOrEdit />}
+                        />
+
+                        <Route
+                          path="/patients/:id/diagnoses/create"
+                          element={<DiagnosesCreateOrEdit />}
+                        />
+                        <Route
+                          path="/patients/:id/diagnoses/:diag"
+                          element={<DiagnosesCreateOrEdit />}
+                        />
+                        <Route
+                          path="/patients/:id/diagnoses/:diag/prescriptions/create"
+                          element={<PrescriptionsCreateOrEdit />}
+                        />
+                        <Route
+                          path="/prescriptions/:pres"
+                          element={<PrescriptionsCreateOrEdit />}
+                        />
+
+                        {/* APPOINTMENTS ROUTES */}
+                        <Route
+                          path="/appointments"
+                          element={<AppointmentsIndex />}
+                        />
+                        <Route
+                          path="/appointments/create"
+                          element={<AppointmentsCreateOrEdit />}
+                        />
+                        <Route
+                          path="/appointments/:id/edit"
+                          element={<AppointmentsCreateOrEdit />}
                         />
                       </Route>
                     </Routes>
