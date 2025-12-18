@@ -3,8 +3,11 @@ import { useMemo } from "react";
 import useSWR from "swr";
 import { getAll } from "@/api";
 import AsyncData from "./AsyncData";
+import { useNavigate } from "react-router";
 
 const Scheduler = () => {
+  const navigate = useNavigate();
+
   const {
     data: doctors = [],
     isLoading: doctorsLoading,
@@ -61,7 +64,15 @@ const Scheduler = () => {
       eventResizeHandling: "Disabled",
       eventMoveHandling: "Disabled",
       onEventClick: (args) => {
-        alert(`Link to event: ${args.e.data.id}`);
+        const patient = patients.find((pat) => {
+          const patientId = appointments.find(
+            (app) => app.id === args.e.data.id
+          ).patient_id;
+          return pat.id === patientId;
+        });
+        navigate(
+          `/patients/${patient.first_name}-${patient.first_name}-${patient.id}`
+        );
       },
     }),
     [doctors, events]

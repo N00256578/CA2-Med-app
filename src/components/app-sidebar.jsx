@@ -101,7 +101,7 @@ export function AppSidebar({ ...props }) {
                 asChild
                 className="data-[slot=sidebar-menu-button]:!p-1.5"
               >
-                <a href="#">
+                <a href="/">
                   <HospitalIcon className="!size-5" />
                   <span className="text-base font-semibold">
                     Medical Clinic

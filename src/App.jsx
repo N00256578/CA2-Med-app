@@ -20,6 +20,7 @@ import AppointmentsIndex from "@/pages/appointments/Index";
 import AppointmentsCreateOrEdit from "@/pages/appointments/CreateOrEdit";
 
 import DiagnosesCreateOrEdit from "@/pages/diagnoses/CreateOrEdit";
+import PrescriptionsCreateOrEdit from "@/pages/prescriptions/CreateOrEdit";
 
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
@@ -90,10 +91,14 @@ export default function App() {
                           path="/patients/:id/diagnoses/:diag"
                           element={<DiagnosesCreateOrEdit />}
                         />
-                        {/* <Route
-                          path="/patients/:id/prescriptions/create"
+                        <Route
+                          path="/patients/:id/diagnoses/:diag/prescriptions/create"
                           element={<PrescriptionsCreateOrEdit />}
-                        /> */}
+                        />
+                        <Route
+                          path="/prescriptions/:pres"
+                          element={<PrescriptionsCreateOrEdit />}
+                        />
 
                         {/* APPOINTMENTS ROUTES */}
                         <Route

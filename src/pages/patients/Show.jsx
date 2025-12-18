@@ -39,6 +39,12 @@ export default function Show() {
     "appointments",
     deleteById
   );
+  const { trigger: deleteDiagnosis, error: deleteDiagError } = useSWRMutation(
+    "diagnoses",
+    deleteById
+  );
+  const { trigger: deletePrescription, error: deletePresError } =
+    useSWRMutation("prescriptions", deleteById);
 
   const {
     data: patient,
@@ -74,10 +80,47 @@ export default function Show() {
     return map;
   }, [doctors]);
 
+  const diagnosesById = useMemo(() => {
+    const map = new Map();
+    diagnoses.forEach((d) => map.set(d.id, d));
+    return map;
+  }, [diagnoses]);
+
   // Filter patient's appointments
   const patientAppointments = useMemo(() => {
     return appointments.filter((app) => app.patient_id === id);
   }, [id, appointments]);
+
+  const handleDeleteDiagnosis = async (diagnosisId) => {
+    try {
+      // Check if there are related prescriptions
+      const relatedPrescriptions = prescriptions.filter(
+        (pre) => pre.diagnosis_id === diagnosisId
+      );
+
+      if (relatedPrescriptions.length > 0) {
+        // Show warning toast and prevent deletion
+        toast.error(
+          `Cannot delete diagnosis. Please delete ${
+            relatedPrescriptions.length
+          } related prescription${
+            relatedPrescriptions.length > 1 ? "s" : ""
+          } first.`,
+          {
+            duration: 5000,
+          }
+        );
+        return;
+      }
+
+      // No related prescriptions, safe to delete
+      await deleteDiagnosis(diagnosisId);
+      toast.success("Diagnosis deleted successfully");
+    } catch (err) {
+      console.error("Error deleting diagnosis:", err);
+      toast.error("Failed to delete diagnosis");
+    }
+  };
 
   // Get sorted table data based on selected tab
   const { tableData, tableConfig } = useMemo(() => {
@@ -215,9 +258,52 @@ export default function Show() {
                 year: "numeric",
               }),
           },
+          {
+            key: "actions",
+            label: "",
+            sortable: false,
+            render: (row) => (
+              <div className="flex gap-2 justify-end">
+                <Button asChild variant="outline">
+                  <Link
+                    to={`/patients/${patient.id}/diagnoses/${row.id}/prescriptions/create`}
+                  >
+                    <IconPillFilled />
+                    Add Prescription
+                  </Link>
+                </Button>
+                <Button
+                  className="cursor-pointer hover:border-blue-500"
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/patients/${id}/diagnoses/${row.id}`);
+                  }}
+                >
+                  <Pencil />
+                </Button>
+                <ConfirmDelete
+                  title="Delete diagnosis"
+                  description="This diagnosis will be permanently removed."
+                  onConfirm={(e) => {
+                    e.stopPropagation();
+                    handleDeleteDiagnosis(row.id);
+                  }}
+                >
+                  <Button
+                    className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Trash />
+                  </Button>
+                </ConfirmDelete>
+              </div>
+            ),
+          },
         ],
         caption: "A list of diagnoses.",
-        onRowClick: (row) => `/diagnoses/${row.id}`,
       },
       Prescriptions: {
         data: prescriptions
@@ -229,6 +315,26 @@ export default function Show() {
           "end-date": (a, b) => a.end_date - b.end_date,
         },
         columns: [
+          {
+            key: "doctor",
+            label: "Doctor",
+            sortable: true,
+            render: (row) => {
+              const doctor = doctorsById.get(row.doctor_id);
+              return doctor
+                ? `${doctor.first_name} ${doctor.last_name}`
+                : "Unknown";
+            },
+          },
+          {
+            key: "diagnosis",
+            label: "Diagnosis",
+            sortable: true,
+            render: (row) => {
+              const diagnosis = diagnosesById.get(row.diagnosis_id);
+              return diagnosis ? diagnosis.condition : "Unknown";
+            },
+          },
           {
             key: "med",
             label: "Medication",
@@ -258,9 +364,45 @@ export default function Show() {
                 year: "numeric",
               }),
           },
+          {
+            key: "actions",
+            label: "",
+            sortable: false,
+            render: (row) => (
+              <div className="flex gap-2 justify-end">
+                <Button
+                  className="cursor-pointer hover:border-blue-500"
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/prescriptions/${row.id}`);
+                  }}
+                >
+                  <Pencil />
+                </Button>
+                <ConfirmDelete
+                  title="Delete prescription"
+                  description="This prescription will be permanently removed."
+                  onConfirm={(e) => {
+                    e.stopPropagation();
+                    deletePrescription(row.id);
+                    toast.success("Prescription deleted successfully");
+                  }}
+                >
+                  <Button
+                    className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Trash />
+                  </Button>
+                </ConfirmDelete>
+              </div>
+            ),
+          },
         ],
         caption: "A list of prescriptions.",
-        onRowClick: (row) => `/prescription/${row.id}`,
       },
     };
 
@@ -304,6 +446,8 @@ export default function Show() {
     errorAppointments ||
     errorDiagnoses ||
     errorPrescriptions ||
+    deleteDiagError ||
+    deletePresError ||
     deleteAppError ||
     deleteError;
 
@@ -391,12 +535,6 @@ export default function Show() {
                 <Link to={`/patients/${patient.id}/diagnoses/create`}>
                   <IconBodyScan />
                   Add Diagnosis
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to={`/patients/${patient.id}/prescription/create`}>
-                  <IconPillFilled />
-                  Add Prescription
                 </Link>
               </Button>
             </div>
