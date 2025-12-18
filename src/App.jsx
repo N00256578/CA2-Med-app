@@ -16,6 +16,8 @@ import PatientsIndex from "@/pages/patients/Index";
 import PatientsShow from "@/pages/patients/Show";
 import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
 
+import AppointmentsIndex from "@/pages/appointments/Index";
+
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
 import RegisterForm from "./components/forms/RegisterForm";
@@ -76,6 +78,24 @@ export default function App() {
                           path="/patients/:id/edit"
                           element={<PatientsCreateOrEdit />}
                         />
+
+                        {/* APPOINTMENTS ROUTES */}
+                        <Route
+                          path="/appointments"
+                          element={<AppointmentsIndex />}
+                        />
+                        {/* <Route
+                          path="/appointments/:id"
+                          element={<AppointmentsShow />}
+                        />
+                        <Route
+                          path="/appointments/create"
+                          element={<AppointmentsCreateOrEdit />}
+                        />
+                        <Route
+                          path="/appointments/:id/edit"
+                          element={<AppointmentsCreateOrEdit />}
+                        /> */}
                       </Route>
                     </Routes>
                   </div>

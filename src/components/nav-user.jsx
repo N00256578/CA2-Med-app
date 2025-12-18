@@ -29,7 +29,7 @@ import { useNavigate } from "react-router";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
-  const { onLogout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   return user ? (
@@ -75,7 +75,9 @@ export function NavUser({ user }) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.first_name} {user.last_name}</span>
+                  <span className="truncate font-medium">
+                    {user.first_name} {user.last_name}
+                  </span>
                   <span className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </span>
@@ -84,7 +86,7 @@ export function NavUser({ user }) {
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout}>
+            <DropdownMenuItem onClick={logout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

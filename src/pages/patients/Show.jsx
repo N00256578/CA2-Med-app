@@ -100,7 +100,14 @@ export default function Show() {
             label: "Date",
             sortable: true,
             render: (row) =>
-              new Date(row.appointment_date * 1000).toLocaleDateString(),
+              new Date(row.appointment_date * 1000).toLocaleDateString(
+                "en-GB",
+                {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                }
+              ),
           },
         ],
         caption: "A list of appointments.",
@@ -154,7 +161,11 @@ export default function Show() {
             label: "Diagnosis Date",
             sortable: true,
             render: (row) =>
-              new Date(row.diagnosis_date * 1000).toLocaleDateString(),
+              new Date(row.diagnosis_date * 1000).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }),
           },
         ],
         caption: "A list of diagnoses.",
@@ -182,13 +193,22 @@ export default function Show() {
             label: "Start Date",
             sortable: true,
             render: (row) =>
-              new Date(row.start_date * 1000).toLocaleDateString(),
+              new Date(row.start_date * 1000).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }),
           },
           {
             key: "end-date",
             label: "End Date",
             sortable: true,
-            render: (row) => new Date(row.end_date * 1000).toLocaleDateString(),
+            render: (row) =>
+              new Date(row.end_date * 1000).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              }),
           },
         ],
         caption: "A list of prescriptions.",

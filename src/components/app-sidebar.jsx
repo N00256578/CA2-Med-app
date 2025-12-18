@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import RegisterForm from "./forms/RegisterForm";
 
 const data = {
   navMain: [
@@ -46,17 +45,17 @@ const data = {
     },
     {
       title: "Appointments",
-      url: "#",
+      url: "/appointments",
       icon: Calendar1Icon,
     },
     {
       title: "Diagnoses",
-      url: "#",
+      url: "/diagnoses",
       icon: IconBodyScan,
     },
     {
       title: "Prescriptions",
-      url: "#",
+      url: "/prescriptions",
       icon: IconPillFilled,
     },
   ],
