@@ -17,6 +17,7 @@ import PatientsShow from "@/pages/patients/Show";
 import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
 
 import AppointmentsIndex from "@/pages/appointments/Index";
+import AppointmentsCreateOrEdit from "@/pages/appointments/CreateOrEdit";
 
 import ProtectedRoute from "@/pages/ProtectedRoute";
 import { DataProvider } from "./contexts/DataContext";
@@ -84,10 +85,6 @@ export default function App() {
                           path="/appointments"
                           element={<AppointmentsIndex />}
                         />
-                        {/* <Route
-                          path="/appointments/:id"
-                          element={<AppointmentsShow />}
-                        />
                         <Route
                           path="/appointments/create"
                           element={<AppointmentsCreateOrEdit />}
@@ -95,7 +92,7 @@ export default function App() {
                         <Route
                           path="/appointments/:id/edit"
                           element={<AppointmentsCreateOrEdit />}
-                        /> */}
+                        />
                       </Route>
                     </Routes>
                   </div>
