@@ -1,4 +1,4 @@
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "@/components/AuthProvider";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 
@@ -8,59 +8,82 @@ import { SiteHeader } from "@/components/site-header";
 
 import Home from "@/pages/Home";
 
-import FestivalsIndex from "@/pages/festivals/Index";
-import FestivalsShow from "@/pages/festivals/Show";
-import FestivalsCreate from "@/pages/festivals/Create";
-import FestivalsEdit from "@/pages/festivals/Edit";
+import DoctorsIndex from "@/pages/doctors/Index";
+import DoctorsShow from "@/pages/doctors/Show";
+import DoctorsCreateOrEdit from "@/pages/doctors/CreateOrEdit";
 
-import FormExamples from "@/pages/examples/Forms";
+import PatientsIndex from "@/pages/patients/Index";
+import PatientsShow from "@/pages/patients/Show";
+import PatientsCreateOrEdit from "@/pages/patients/CreateOrEdit";
+
 import ProtectedRoute from "@/pages/ProtectedRoute";
+import { DataProvider } from "./contexts/DataContext";
+import RegisterForm from "./components/forms/RegisterForm";
 
 export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <SidebarProvider
-          style={{
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          }}
-        >
-          <AppSidebar variant="inset" />
-          <SidebarInset>
-            <SiteHeader />
-            {/* <Navbar onLogin={onLogin} loggedIn={loggedIn} /> */}
+        <DataProvider>
+          <SidebarProvider
+            style={{
+              "--sidebar-width": "calc(var(--spacing) * 72)",
+              "--header-height": "calc(var(--spacing) * 12)",
+            }}
+          >
+            <AppSidebar variant="inset" />
+            <SidebarInset>
+              <SiteHeader />
 
-            <div className="flex flex-1 flex-col">
-              <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="flex flex-col gap-2 py-4 md:gap-2 md:py-6 mx-6">
-                  {/* Main content */}
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/festivals" element={<FestivalsIndex />} />
+              <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                  <div className="flex flex-col gap-2 py-4 md:gap-2 md:py-6 mx-6">
+                    {/* Main content */}
+                    <Routes>
+                      {/* ROUTES WITHOUT AUTHENTICATION */}
+                      <Route path="/" element={<Home />} />
+                      <Route path="/doctors" element={<DoctorsIndex />} />
+                      <Route path="/patients" element={<PatientsIndex />} />
 
-                    <Route path="/" element={<ProtectedRoute />}>
-                      <Route
-                        path="/festivals/:id"
-                        element={<FestivalsShow />}
-                      />
-                      <Route
-                        path="/festivals/:id/edit"
-                        element={<FestivalsEdit />}
-                      />
-                      <Route
-                        path="/festivals/create"
-                        element={<FestivalsCreate />}
-                      />
-                    </Route>
+                      <Route path="/" element={<ProtectedRoute />}>
+                        {/* REGISTER ROUTE*/}
+                        <Route path="/register" element={<RegisterForm />} />
 
-                    <Route path="/forms" element={<FormExamples />} />
-                  </Routes>
+                        {/* DOCTORS ROUTES*/}
+                        <Route
+                          path="/doctors/:slug"
+                          element={<DoctorsShow />}
+                        />
+                        <Route
+                          path="/doctors/:id/edit"
+                          element={<DoctorsCreateOrEdit />}
+                        />
+                        <Route
+                          path="/doctors/create"
+                          element={<DoctorsCreateOrEdit />}
+                        />
+
+                        {/* PATIENTS ROUTES*/}
+                        <Route
+                          path="/patients/:slug"
+                          element={<PatientsShow />}
+                        />
+                        <Route
+                          path="/patients/create"
+                          element={<PatientsCreateOrEdit />}
+                        />
+                        <Route
+                          path="/patients/:id/edit"
+                          element={<PatientsCreateOrEdit />}
+                        />
+                      </Route>
+                    </Routes>
+                  </div>
                 </div>
               </div>
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
+            </SidebarInset>
+          </SidebarProvider>
+        </DataProvider>
       </AuthProvider>
     </Router>
   );

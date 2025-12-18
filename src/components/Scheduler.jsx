@@ -1,33 +1,79 @@
-import { DayPilotScheduler, DayPilot } from "@daypilot/daypilot-lite-react";
+import { DayPilotScheduler } from "@daypilot/daypilot-lite-react";
+import { useMemo } from "react";
+import useSWR from "swr";
+import { getAll } from "@/api";
+import AsyncData from "./AsyncData";
 
 const Scheduler = () => {
-  const config = {
-    timeHeaders: [{ groupBy: "Month" }, { groupBy: "Day", format: "d" }],
-    scale: "Day",
-    days: 30,
-    startDate: new Date().toISOString().split('T')[0], // Today's date
-    cellDuration: 1440, // 1440 minutes = 1 day
-    cellWidth: 50,
-    resources: [
-      { name: "Doctor 1", id: "doc1" },
-      { name: "Doctor 2", id: "doc2" },
-      { name: "Doctor 3", id: "doc3" },
-    ],
-    events: [
-      {
-        id: 1,
-        text: "Appointment 1",
-        start: new Date().toISOString(),
-        end: new Date(Date.now() + 3600000).toISOString(), // +1 hour
-        resource: "doc1"
-      }
-    ]
-  };
+  const {
+    data: doctors = [],
+    isLoading: doctorsLoading,
+    error: doctorsError,
+  } = useSWR("doctors", getAll);
+
+  const {
+    data: appointments = [],
+    isLoading: appointmentsLoading,
+    error: appointmentsError,
+  } = useSWR("appointments", getAll);
+
+  const {
+    data: patients = [],
+    isLoading: patientsLoading,
+    error: patientsError,
+  } = useSWR("patients", getAll);
+
+  const events = useMemo(() => {
+    if (!appointments.length || !patients.length) return [];
+
+    return appointments.map((appointment) => {
+      const patient = patients.find((p) => p.id === appointment.patient_id);
+      let date = new Date(appointment.appointment_date * 1000);
+
+      return {
+        id: appointment.id,
+        text: `${patient.first_name} ${patient.last_name}`,
+        start: new Date(date).toISOString(),
+        end: new Date(date.getTime() + 3600000).toISOString(), // +1 hour
+        resource: appointment.doctor_id,
+      };
+    });
+  }, [appointments, patients]);
+
+  const config = useMemo(
+    () => ({
+      timeHeaders: [
+        { groupBy: "Day", format: "d MMMM yyyy" },
+        { groupBy: "Hour" },
+      ],
+      scale: "CellDuration",
+      days: 1,
+      startDate: new Date().toISOString().split("T")[0],
+      cellDuration: 60,
+      cellWidth: 67.5,
+      resources: doctors.map((doctor) => ({
+        id: doctor.id,
+        name: doctor.first_name + " " + doctor.last_name,
+      })),
+      events: events,
+      eventResizeHandling: "Disabled",
+      eventMoveHandling: "Disabled",
+      onEventClick: (args) => {
+        alert(`Link to event: ${args.e.data.id}`);
+      },
+    }),
+    [doctors, events]
+  );
 
   return (
-    <div style={{ height: "500px" }}>
-      <DayPilotScheduler {...config} />
-    </div>
+    <AsyncData
+      loading={doctorsLoading || appointmentsLoading || patientsLoading}
+      error={doctorsError || appointmentsError || patientsError}
+    >
+      <div style={{ height: "500px", width: "100%" }}>
+        <DayPilotScheduler {...config} />
+      </div>
+    </AsyncData>
   );
 };
 

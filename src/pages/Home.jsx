@@ -1,4 +1,4 @@
-import LoginForm from "@/components/LoginForm";
+import LoginForm from "@/components/forms/LoginForm";
 import Scheduler from "@/components/Scheduler";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -9,7 +9,7 @@ export default function Home() {
       {!token ? (
         <LoginForm />
       ) : (
-        <div>
+        <div className="w-full">
           <h1 className="text-2xl font-bold">
             Welcome to the Medical App Dashboard
           </h1>

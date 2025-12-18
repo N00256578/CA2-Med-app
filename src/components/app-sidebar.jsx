@@ -1,23 +1,18 @@
 import * as React from "react";
 import {
-  IconConfetti,
-  IconTheater,
   IconDashboard,
-  IconMicrophone2,
-  IconInnerShadowTop,
-  IconMusic,
   IconListCheck,
   IconStethoscope,
   IconBodyScan,
   IconPillFilled,
+  IconPencil,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import { useEffect } from "react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavExamples } from "@/components/nav-examples";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -29,13 +24,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Calendar1Icon, HospitalIcon, User2Icon } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import RegisterForm from "./forms/RegisterForm";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -78,9 +70,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }) {
+  const { user } = useAuth();
   const location = useLocation();
-
-  console.log(location);
 
   let message = location.state?.message;
   let type = location.state?.type;
@@ -94,8 +85,18 @@ export function AppSidebar({ ...props }) {
       } else {
         toast(message);
       }
+      window.history.replaceState({}, "");
     }
-  }, [message]);
+  }, [message, type]);
+
+  const checkActive = (url) => {
+    if (location.pathname === "/" && url === "/") {
+      return true;
+    } else if (url !== "/" && location.pathname.includes(url)) {
+      return true;
+    }
+    return false;
+  };
 
   return (
     <>
@@ -119,11 +120,21 @@ export function AppSidebar({ ...props }) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <NavMain items={data.navMain} />
-          <NavExamples items={data.examples} />
+          <NavMain items={data.navMain} checkActive={checkActive} />
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={data.user} />
+          {user ? (
+            <SidebarMenuButton
+              asChild
+              tooltip={"register"}
+              isActive={checkActive("/register")}
+            >
+              <Link to={"/register"}>
+                <IconPencil /> <span>Register new user</span>
+              </Link>
+            </SidebarMenuButton>
+          ) : null}
+          <NavUser user={user} />
         </SidebarFooter>
       </Sidebar>
     </>
